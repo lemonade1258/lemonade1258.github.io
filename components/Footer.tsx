@@ -1,6 +1,6 @@
 import React from "react";
-import { UNIVERSITY_NAME, LAB_FULL_NAME } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Github, Code2 } from "lucide-react"; // Using Code2 as a proxy icon for HuggingFace if needed, or just text
 
 const Footer: React.FC = () => {
   const { t } = useLanguage();
@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <h3 className="text-brand-red font-bold text-lg mb-4 font-serif">
-              {LAB_FULL_NAME}
+              {t("common.labFullName")}
             </h3>
             <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
               {t("hero.description")}
@@ -24,23 +24,23 @@ const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-3 text-sm text-slate-500">
               <li>
-                <a href="#" className="hover:text-brand-tech transition-colors">
-                  Twitter / X
+                <a
+                  href="https://huggingface.co/NextGenWhu"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 hover:text-brand-tech transition-colors"
+                >
+                  <span className="text-lg">🤗</span> HuggingFace
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-brand-tech transition-colors">
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-brand-tech transition-colors">
-                  Google Scholar
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-brand-tech transition-colors">
-                  LinkedIn
+                <a
+                  href="https://github.com/WHUNextGen"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 hover:text-brand-tech transition-colors"
+                >
+                  <Github size={16} /> GitHub
                 </a>
               </li>
             </ul>
@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3 text-sm text-slate-500">
               <li>Computer Science Building</li>
               <li>Room 502</li>
-              <li>{UNIVERSITY_NAME}</li>
+              <li>{t("common.wuhanUniversity")}</li>
               <li>Wuhan, China</li>
             </ul>
           </div>

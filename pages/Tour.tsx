@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { ArrowRight, Globe, Cpu, Network, ArrowUpRight } from "lucide-react";
+import {
+  ArrowRight,
+  Globe,
+  Cpu,
+  Network,
+  ArrowUpRight,
+  Flame,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchNews, fetchContact } from "../lib/dataStore";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -96,23 +103,22 @@ const Tour: React.FC = () => {
 
           <div className="lg:col-span-6 hidden lg:flex justify-center justify-items-center opacity-0 animate-fade-in-up stagger-2 relative">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-gradient-to-tr from-brand-red/5 to-transparent rounded-full blur-3xl -z-10"></div>
-            <img
-              src="/clain_logo_full.png"
-              alt="CLAIN Center for Language and Information Research"
-              className="w-full max-w-xl object-contain transform hover:scale-[1.02] transition-transform duration-700 ease-out"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                const parent = e.currentTarget.parentElement;
-                if (parent) {
-                  parent.innerHTML = `
-                      <div class="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 text-center">
-                        <span class="text-brand-red font-bold text-4xl mb-2">CLAIN</span>
-                        <span class="text-slate-400 text-sm">Image not found.<br/>Please add <b>clain_logo_full.png</b> to public folder.</span>
-                      </div>
-                    `;
-                }
-              }}
-            />
+
+            {/* Replaced Static Image with Dynamic Title Card using Flame Icon */}
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50 backdrop-blur-sm text-center transform hover:scale-[1.02] transition-transform duration-700 ease-out w-full max-w-lg aspect-square">
+              <div className="w-24 h-24 mb-6 text-brand-red flex items-center justify-center bg-white rounded-full shadow-sm">
+                <Flame className="w-12 h-12" />
+              </div>
+              <span className="text-brand-red font-bold text-4xl mb-2 font-serif">
+                {t("common.labName")}
+              </span>
+              <span className="text-slate-400 text-sm uppercase tracking-widest mb-1">
+                {t("common.wuhanUniversity")}
+              </span>
+              <span className="text-slate-800 text-lg font-light leading-tight px-8">
+                {t("common.labFullName")}
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -260,7 +266,7 @@ const Tour: React.FC = () => {
 
         <div className="absolute bottom-8 right-8 z-30">
           <p className="text-white text-xs font-mono tracking-widest uppercase opacity-80">
-            Wuhan University &middot; Information Science Laboratory
+            {t("common.wuhanUniversity")} &middot; {t("common.labFullName")}
           </p>
         </div>
       </section>

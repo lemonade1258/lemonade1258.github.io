@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import {
-  Menu,
-  X,
-  ChevronRight,
-  Languages,
-  LayoutDashboard,
-} from "lucide-react";
-import { LAB_NAME, LAB_FULL_NAME, UNIVERSITY_NAME } from "../constants";
+import { Menu, X, ChevronRight, Languages, Flame } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 
 const Navbar: React.FC = () => {
@@ -63,32 +56,26 @@ const Navbar: React.FC = () => {
           {/* Logo Section */}
           <div className="flex-shrink-0 flex items-center gap-3">
             <NavLink to="/" className="group flex items-center gap-3">
-              <div className="w-10 h-10 flex items-center justify-center pt-1">
-                <img
-                  src="/clain_logo_icon.png"
-                  alt="CLAIN Icon"
-                  className="h-full w-auto object-contain"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full text-brand-red" fill="currentColor"><path d="M50 10 C30 30 20 45 20 60 C20 80 35 95 50 95 C65 95 80 80 80 60 C80 45 70 30 50 10 Z" /></svg>`;
-                    }
-                  }}
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-brand-red/5 group-hover:bg-brand-red/10 transition-colors">
+                {/* Replaced Water Drop Image with Flame Icon */}
+                <Flame
+                  className="text-brand-red w-6 h-6"
+                  fill="currentColor"
+                  fillOpacity={0.1}
                 />
               </div>
 
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-2">
                   <h1 className="text-2xl font-bold tracking-tight text-brand-red font-sans">
-                    {LAB_NAME}
+                    {t("common.labName")}
                   </h1>
                   <span className="hidden md:block text-xs uppercase tracking-widest text-slate-400 font-medium">
-                    {UNIVERSITY_NAME}
+                    {t("common.wuhanUniversity")}
                   </span>
                 </div>
                 <span className="text-[10px] md:text-xs text-slate-500 font-normal leading-none group-hover:text-brand-dark transition-colors">
-                  {LAB_FULL_NAME}
+                  {t("common.labFullName")}
                 </span>
               </div>
             </NavLink>
@@ -119,14 +106,6 @@ const Navbar: React.FC = () => {
                 <Languages size={16} />
                 {language === "en" ? "EN" : "中文"}
               </button>
-
-              <NavLink
-                to="/admin"
-                className="text-slate-400 hover:text-brand-red transition-colors"
-                title="Admin Login"
-              >
-                <LayoutDashboard size={16} />
-              </NavLink>
             </div>
           </div>
 
@@ -176,12 +155,6 @@ const Navbar: React.FC = () => {
                 )}
               </NavLink>
             ))}
-            <NavLink
-              to="/admin"
-              className="flex items-center justify-between py-3 text-xl font-serif text-slate-400"
-            >
-              Admin
-            </NavLink>
           </div>
         </div>
       )}

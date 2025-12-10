@@ -14,6 +14,10 @@ export const translations = {
       language: "Language",
       email: "Email",
       website: "Website",
+      wuhanUniversity: "Wuhan University",
+      labFullName: "Center for Language and Information Research",
+      labName: "CLAIN",
+      hiring: "Join Us",
     },
     nav: {
       tour: "Tour",
@@ -77,6 +81,19 @@ export const translations = {
         lessInfo: "Show Less",
       },
     },
+    publications: {
+      title: "Publications",
+      subtitle:
+        "Selected research papers, conference proceedings, and technical reports.",
+      filterYear: "Filter Year",
+      noPubs: "No publications found for the selected year.",
+    },
+    contact: {
+      inquiries: "Inquiries",
+      general: "General",
+      admissions: "Admissions",
+      joinUs: "Join Us",
+    },
     admin: {
       dashboard: "Dashboard",
       news: "News & Updates",
@@ -117,6 +134,10 @@ export const translations = {
       language: "语言",
       email: "邮箱",
       website: "个人主页",
+      wuhanUniversity: "武汉大学",
+      labFullName: "语言与信息研究中心",
+      labName: "CLAIN",
+      hiring: "加入我们",
     },
     nav: {
       tour: "导览",
@@ -179,6 +200,18 @@ export const translations = {
         moreInfo: "查看更多",
         lessInfo: "收起详情",
       },
+    },
+    publications: {
+      title: "论文发表",
+      subtitle: "精选研究论文、会议论文集及技术报告。",
+      filterYear: "筛选年份",
+      noPubs: "该年份暂无论文数据。",
+    },
+    contact: {
+      inquiries: "咨询联系",
+      general: "综合咨询",
+      admissions: "招生咨询",
+      joinUs: "加入我们",
     },
     admin: {
       dashboard: "控制台",

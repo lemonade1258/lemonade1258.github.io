@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { fetchPublications } from "../lib/dataStore";
 import { Publication } from "../types";
 import { ArrowUpRight } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const Publications: React.FC = () => {
+  const { t } = useLanguage();
   const [publications, setPublications] = useState<Publication[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [loading, setLoading] = useState(true);
@@ -39,8 +41,8 @@ const Publications: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 text-center text-slate-400">
-        Loading...
+      <div className="min-h-screen pt-32 text-center text-slate-400 font-serif">
+        {t("common.loading")}
       </div>
     );
   }
@@ -51,17 +53,16 @@ const Publications: React.FC = () => {
         <header className="mb-20 pt-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
             <h1 className="text-5xl md:text-6xl font-serif text-brand-dark mb-6">
-              Publications
+              {t("publications.title")}
             </h1>
             <p className="text-xl text-slate-500 font-light max-w-2xl">
-              Selected research papers, conference proceedings, and technical
-              reports.
+              {t("publications.subtitle")}
             </p>
           </div>
 
           <div className="flex items-center space-x-4">
             <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-              Filter Year
+              {t("publications.filterYear")}
             </span>
             <div className="relative">
               <select
@@ -158,7 +159,7 @@ const Publications: React.FC = () => {
 
           {filteredPubs.length === 0 && (
             <div className="py-20 text-center text-slate-400 font-light italic">
-              No publications found for the selected year.
+              {t("publications.noPubs")}
             </div>
           )}
         </div>
