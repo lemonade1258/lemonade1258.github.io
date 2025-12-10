@@ -40,7 +40,8 @@ const Contact: React.FC = () => {
           <h1 className="text-5xl md:text-6xl font-serif text-brand-dark mb-6">
             {t("nav.contact")}
           </h1>
-          <p className="text-xl md:text-2xl text-slate-500 font-light leading-relaxed max-w-3xl">
+          {/* Added whitespace-pre-line to preserve line breaks from textarea inputs */}
+          <p className="text-xl md:text-2xl text-slate-500 font-light leading-relaxed max-w-3xl whitespace-pre-line">
             {intro}
           </p>
         </header>
@@ -106,7 +107,8 @@ const Contact: React.FC = () => {
                 </h3>
               </div>
               <div className="pl-6 border-l border-slate-200 group-hover:border-brand-red transition-colors duration-300">
-                <p className="text-slate-600 font-light leading-relaxed">
+                {/* Added whitespace-pre-line here as well */}
+                <p className="text-slate-600 font-light leading-relaxed whitespace-pre-line">
                   {hiringText}
                 </p>
                 {/* View Open Positions Link Removed as requested */}
