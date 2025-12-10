@@ -40,7 +40,6 @@ async function apiCall<T>(
 
     // Handle 403 Forbidden (Token expired or invalid)
     if (response.status === 403) {
-      // Optional: Trigger logout logic here or throw specific error
       console.warn("Access forbidden. You might need to login again.");
     }
 
@@ -52,13 +51,12 @@ async function apiCall<T>(
         if (errorJson.message) errorMessage = errorJson.message;
       } catch (e) {}
 
+      // If error message looks like HTML (e.g. 500 Nginx/Express error page), simplify it
       if (errorMessage && errorMessage.trim().startsWith("<")) {
         errorMessage = "Server Internal Error. Please check backend logs.";
       }
 
-      throw new Error(
-        `API Error ${response.status}: ${errorMessage || response.statusText}`
-      );
+      throw new Error(errorMessage || response.statusText);
     }
     return await response.json();
   } catch (error) {
@@ -78,10 +76,23 @@ export const loginAdmin = async (
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    const data = await response.json();
-    return data;
+
+    // Get raw text first to handle potential HTML responses (like 404 or 500)
+    const text = await response.text();
+
+    try {
+      const data = JSON.parse(text);
+      return data;
+    } catch (e) {
+      // If parsing fails, it implies the server returned HTML (likely 404 Not Found if server wasn't restarted)
+      console.error("Login response was not JSON:", text);
+      return {
+        success: false,
+        message: `Server Interface Error (${response.status}). Please restart the backend (pm2 restart clain-api).`,
+      };
+    }
   } catch (e: any) {
-    return { success: false, message: e.message || "Login failed" };
+    return { success: false, message: "Network Error: Cannot reach server." };
   }
 };
 
