@@ -101,6 +101,9 @@ export interface ContactInfo {
 
   // Map
   mapEmbedUrl: string;
+
+  // Homepage Hero Carousel
+  heroImages?: string[];
 }
 
 export interface EventItem {

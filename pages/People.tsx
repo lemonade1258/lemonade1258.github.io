@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getPeople } from "../lib/dataStore";
+import { fetchPeople } from "../lib/dataStore";
 import { Person, PersonCategory } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import {
@@ -253,11 +253,19 @@ const People: React.FC = () => {
   ];
 
   useEffect(() => {
-    const data = getPeople();
-    // Sort by order
-    data.sort((a, b) => (a.order || 99) - (b.order || 99));
-    setPeople(data);
-    setLoading(false);
+    const load = async () => {
+      try {
+        const data = await fetchPeople();
+        // Backend sort might be enough, but enforce frontend sort by order just in case
+        data.sort((a, b) => (a.order || 99) - (b.order || 99));
+        setPeople(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   // Filter Logic with Safety Check

@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { getPeople, savePeople, exportToCSV } from "../../lib/dataStore";
+import {
+  fetchPeople,
+  createPerson,
+  updatePerson,
+  deletePerson,
+  exportToCSV,
+} from "../../lib/dataStore";
 import { Person, PersonCategory } from "../../types";
-import { Search, Plus, Trash2, Edit2, Download, Save, X } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Trash2,
+  Edit2,
+  Download,
+  Save,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 const PeopleManager: React.FC = () => {
@@ -11,6 +26,8 @@ const PeopleManager: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Partial<Person>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Helpers for Teacher Profile Arrays (English)
   const [researchInput, setResearchInput] = useState("");
@@ -24,10 +41,26 @@ const PeopleManager: React.FC = () => {
   const [projectInputZh, setProjectInputZh] = useState("");
   const [influenceInputZh, setInfluenceInputZh] = useState("");
 
+  const refreshData = async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const data = await fetchPeople();
+      setPeople(data);
+      setFiltered(data);
+    } catch (e: any) {
+      console.error(e);
+      setErrorMsg(e.message || "Failed to fetch data");
+      // Initialize empty so UI can at least be seen
+      setPeople([]);
+      setFiltered([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const data = getPeople();
-    setPeople(data);
-    setFiltered(data);
+    refreshData();
   }, []);
 
   useEffect(() => {
@@ -38,7 +71,7 @@ const PeopleManager: React.FC = () => {
     }
   }, [people, activeCategory]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     let newItem = { ...editingItem } as Person;
 
     // Process textarea inputs into arrays for TeacherProfile if applicable
@@ -82,24 +115,35 @@ const PeopleManager: React.FC = () => {
         .filter((s) => s.trim());
     }
 
-    let updated: Person[];
-    if (newItem.id) {
-      updated = people.map((p) => (p.id === newItem.id ? newItem : p));
-    } else {
-      newItem.id = Date.now().toString();
-      updated = [...people, newItem];
+    setIsLoading(true);
+    try {
+      if (!newItem.id) newItem.id = Date.now().toString();
+
+      if (editingItem.id) {
+        await updatePerson(newItem);
+      } else {
+        await createPerson(newItem);
+      }
+      setIsModalOpen(false);
+      setEditingItem({});
+      refreshData();
+    } catch (err: any) {
+      alert(
+        `Failed to save person: ${err.message}. Please check if backend is running.`
+      );
+    } finally {
+      setIsLoading(false);
     }
-    setPeople(updated);
-    savePeople(updated);
-    setIsModalOpen(false);
-    setEditingItem({});
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Delete this person?")) {
-      const updated = people.filter((p) => p.id !== id);
-      setPeople(updated);
-      savePeople(updated);
+      try {
+        await deletePerson(id);
+        refreshData();
+      } catch (err) {
+        alert("Failed to delete");
+      }
     }
   };
 
@@ -217,17 +261,35 @@ const PeopleManager: React.FC = () => {
         ))}
       </div>
 
+      {isLoading && <div className="text-center py-4">Loading...</div>}
+
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 flex items-center">
+          <AlertTriangle className="mr-2" size={18} />
+          <span>Connection Error: {errorMsg}. Backend might be offline.</span>
+        </div>
+      )}
+
       <div className="flex-grow overflow-auto">
+        {filtered.length === 0 && !isLoading && (
+          <div className="text-center py-10 text-slate-400 italic border-2 border-dashed border-slate-100 rounded-lg">
+            No people found. Click "Add New" to create one.
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((person) => (
             <div
               key={person.id}
-              className="border rounded-lg p-4 flex gap-4 items-start relative group bg-slate-50"
+              className="border rounded-lg p-4 flex gap-4 items-start relative group bg-slate-50 hover:shadow-md transition-shadow"
             >
               <img
                 src={person.avatar}
                 alt={person.name}
                 className="w-14 h-14 rounded-full object-cover bg-slate-200"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://ui-avatars.com/api/?name=" + person.name;
+                }}
               />
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-slate-800 truncate">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { getNews } from "../lib/dataStore";
+import { fetchNewsItem } from "../lib/dataStore";
 import { NewsItem } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ArrowLeft, Calendar, User, X } from "lucide-react";
@@ -16,17 +16,21 @@ const NewsDetail: React.FC = () => {
 
   // Fetch Data
   useEffect(() => {
-    const fetchData = () => {
+    const fetchData = async () => {
+      if (!id) return;
       setLoading(true);
-      const allNews = getNews();
-      const found = allNews.find((n) => n.id === id);
-
-      if (found) {
-        setArticle(found);
-      } else {
-        navigate("/news");
+      try {
+        const item = await fetchNewsItem(id);
+        if (item) {
+          setArticle(item);
+        } else {
+          // navigate('/news'); // Optional: redirect on 404
+        }
+      } catch (err) {
+        console.error("Failed to fetch news detail", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchData();
@@ -67,7 +71,10 @@ const NewsDetail: React.FC = () => {
     );
   }
 
-  if (!article) return null;
+  if (!article)
+    return (
+      <div className="pt-32 text-center text-slate-500">Article not found.</div>
+    );
 
   // Bilingual Logic
   const isZh = language === "zh";

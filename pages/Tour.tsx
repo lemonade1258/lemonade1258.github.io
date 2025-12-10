@@ -1,19 +1,59 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight, Globe, Cpu, Network, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getNews } from "../lib/dataStore";
+import { fetchNews, fetchContact } from "../lib/dataStore";
 import { useLanguage } from "../contexts/LanguageContext";
-import { NewsItem } from "../types";
+import { NewsItem, ContactInfo } from "../types";
 
 const Tour: React.FC = () => {
   const { t, language } = useLanguage();
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setNewsItems(getNews().slice(0, 3));
+    const loadData = async () => {
+      try {
+        // Using Promise.all to fetch both in parallel
+        const [newsData, contactData] = await Promise.all([
+          fetchNews(),
+          fetchContact(),
+        ]);
+        setNewsItems(newsData.slice(0, 3));
+        setContactInfo(contactData);
+      } catch (err) {
+        console.error("Failed to load data for home", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
+  // Carousel Logic
+  useEffect(() => {
+    if (contactInfo?.heroImages && contactInfo.heroImages.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex(
+          (prev) => (prev + 1) % contactInfo.heroImages!.length
+        );
+      }, 5000); // Change every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [contactInfo]);
+
   const isZh = language === "zh";
+
+  // Default fallback image
+  const defaultImage =
+    "https://images.unsplash.com/photo-1555431189-0fabf2667795?q=80&w=2574&auto=format&fit=crop";
+
+  // Logic: Use backend images if available, otherwise default.
+  // Wait for loading to finish to avoid flashing default image if we have real ones coming.
+  const hasCustomImages =
+    contactInfo?.heroImages && contactInfo.heroImages.length > 0;
+  const heroImages = hasCustomImages ? contactInfo.heroImages! : [defaultImage];
 
   return (
     <div className="bg-white">
@@ -182,15 +222,44 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      <section className="h-[60vh] w-full relative overflow-hidden">
-        <div className="absolute inset-0 bg-brand-dark/20 z-10"></div>
-        <img
-          src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/main-2.jpg"
-          alt="Abstract Lab"
-          className="w-full h-full object-cover transition-all duration-1000 ease-out transform hover:scale-105"
-        />
-        <div className="absolute bottom-0 left-0 p-8 z-20">
-          <p className="text-white text-xs font-mono tracking-widest uppercase">
+      {/* Bottom Hero Carousel */}
+      <section className="h-[60vh] w-full relative overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 bg-brand-dark/20 z-20 pointer-events-none"></div>
+
+        {heroImages.map((img, idx) => (
+          <img
+            key={idx}
+            src={img}
+            alt={`Lab Showcase ${idx + 1}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+              idx === currentImageIndex
+                ? "opacity-100 scale-105"
+                : "opacity-0 scale-100"
+            }`}
+            style={{ transitionProperty: "opacity, transform" }}
+          />
+        ))}
+
+        {/* Carousel Indicators */}
+        {heroImages.length > 1 && (
+          <div className="absolute bottom-8 left-8 z-30 flex space-x-2">
+            {heroImages.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentImageIndex(idx)}
+                className={`w-12 h-1 rounded-full transition-all duration-300 ${
+                  idx === currentImageIndex
+                    ? "bg-white"
+                    : "bg-white/30 hover:bg-white/50"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="absolute bottom-8 right-8 z-30">
+          <p className="text-white text-xs font-mono tracking-widest uppercase opacity-80">
             Wuhan University &middot; Information Science Laboratory
           </p>
         </div>

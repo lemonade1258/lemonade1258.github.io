@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { UNIVERSITY_NAME, LAB_FULL_NAME } from "../constants";
-import { ArrowUpRight } from "lucide-react";
-import { getContact } from "../lib/dataStore";
+import { fetchContact } from "../lib/dataStore";
 import { ContactInfo } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
+import { ArrowUpRight } from "lucide-react";
 
 const Contact: React.FC = () => {
   const { language, t } = useLanguage();
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
 
   useEffect(() => {
-    setContactInfo(getContact());
+    const load = async () => {
+      try {
+        const data = await fetchContact();
+        setContactInfo(data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    load();
   }, []);
 
   if (!contactInfo)

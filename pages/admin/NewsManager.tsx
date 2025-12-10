@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { getNews, saveNews, exportToCSV } from "../../lib/dataStore";
+import {
+  fetchNews,
+  createNews,
+  updateNews,
+  deleteNews,
+  exportToCSV,
+} from "../../lib/dataStore";
 import { NewsItem } from "../../types";
 import {
   Search,
@@ -19,15 +25,27 @@ const NewsManager: React.FC = () => {
   const [filtered, setFiltered] = useState<NewsItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Editor State
   const [editingItem, setEditingItem] = useState<Partial<NewsItem>>({});
   const [activeTab, setActiveTab] = useState<"zh" | "en">("zh");
 
+  const refreshData = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchNews();
+      setNews(data);
+      setFiltered(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const data = getNews();
-    setNews(data);
-    setFiltered(data);
+    refreshData();
   }, []);
 
   useEffect(() => {
@@ -44,42 +62,48 @@ const NewsManager: React.FC = () => {
     setFiltered(results);
   }, [searchTerm, news]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this item?")) {
-      const updated = news.filter((n) => n.id !== id);
-      setNews(updated);
-      saveNews(updated);
+      try {
+        await deleteNews(id);
+        refreshData();
+      } catch (err) {
+        alert("Failed to delete");
+      }
     }
   };
 
-  const handleSave = () => {
-    // Validation: Title in at least one language is required
+  const handleSave = async () => {
+    // Validation
     if (!editingItem.title && !editingItem.titleZh) {
       alert("Please provide a title in at least one language.");
       return;
     }
 
-    let updated: NewsItem[];
-    if (editingItem.id) {
-      updated = news.map((n) =>
-        n.id === editingItem.id ? ({ ...n, ...editingItem } as NewsItem) : n
-      );
-    } else {
-      const newItem = {
+    setIsLoading(true);
+    try {
+      const payload = {
         ...editingItem,
-        id: Date.now().toString(),
+        id: editingItem.id || Date.now().toString(),
         date: editingItem.date || new Date().toLocaleDateString(),
       } as NewsItem;
-      updated = [newItem, ...news];
+
+      if (editingItem.id) {
+        await updateNews(payload);
+      } else {
+        await createNews(payload);
+      }
+      setIsModalOpen(false);
+      setEditingItem({});
+      refreshData();
+    } catch (err) {
+      alert("Failed to save");
+    } finally {
+      setIsLoading(false);
     }
-    setNews(updated);
-    saveNews(updated);
-    setIsModalOpen(false);
-    setEditingItem({});
   };
 
   const openModal = (item?: NewsItem) => {
-    // Default to 'zh' tab for new items, or whatever logical default
     setActiveTab("zh");
     setEditingItem(
       item || {
@@ -124,6 +148,10 @@ const NewsManager: React.FC = () => {
         />
       </div>
 
+      {isLoading && (
+        <div className="text-center py-4 text-slate-400">Loading...</div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -135,7 +163,7 @@ const NewsManager: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {!isLoading && filtered.length === 0 ? (
               <tr>
                 <td colSpan={4} className="p-8 text-center text-slate-400">
                   {t("common.noData")}

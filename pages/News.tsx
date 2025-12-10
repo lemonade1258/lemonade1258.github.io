@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getNews } from "../lib/dataStore"; // Correct import source
+import { fetchNews } from "../lib/dataStore"; // Correct import source
 import { useLanguage } from "../contexts/LanguageContext";
 import { NewsItem } from "../types";
 
@@ -11,10 +11,17 @@ const News: React.FC = () => {
 
   // Sync data on mount
   useEffect(() => {
-    const data = getNews();
-    // Sort by date descending (optional, but good for news)
-    setNewsItems(data);
-    setLoading(false);
+    const load = async () => {
+      try {
+        const data = await fetchNews();
+        setNewsItems(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   if (loading) {

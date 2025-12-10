@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  getPublications,
-  savePublications,
+  fetchPublications,
+  createPublication,
+  updatePublication,
+  deletePublication,
   exportToCSV,
 } from "../../lib/dataStore";
 import { Publication } from "../../types";
@@ -15,12 +17,25 @@ const PublicationManager: React.FC = () => {
   const [editingItem, setEditingItem] = useState<Partial<Publication>>({});
   const [authorsInput, setAuthorsInput] = useState("");
   const [tagsInput, setTagsInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const refreshData = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchPublications();
+      setPubs(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setPubs(getPublications());
+    refreshData();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     let newItem = { ...editingItem } as Publication;
 
     // Process Arrays
@@ -33,27 +48,32 @@ const PublicationManager: React.FC = () => {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    let updated: Publication[];
-    if (newItem.id) {
-      updated = pubs.map((p) => (p.id === newItem.id ? newItem : p));
-    } else {
-      newItem.id = Date.now().toString();
-      updated = [...pubs, newItem];
+    setIsLoading(true);
+    try {
+      if (!newItem.id) newItem.id = Date.now().toString();
+
+      if (editingItem.id) {
+        await updatePublication(newItem);
+      } else {
+        await createPublication(newItem);
+      }
+      setIsModalOpen(false);
+      refreshData();
+    } catch (err) {
+      alert("Failed to save");
+    } finally {
+      setIsLoading(false);
     }
-
-    // Sort by year
-    updated.sort((a, b) => b.year - a.year);
-
-    setPubs(updated);
-    savePublications(updated);
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Delete this publication?")) {
-      const updated = pubs.filter((p) => p.id !== id);
-      setPubs(updated);
-      savePublications(updated);
+      try {
+        await deletePublication(id);
+        refreshData();
+      } catch (err) {
+        alert("Failed to delete");
+      }
     }
   };
 
@@ -89,6 +109,8 @@ const PublicationManager: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {isLoading && <div className="text-center py-4">Loading...</div>}
 
       <div className="flex-grow overflow-auto">
         <table className="w-full text-left border-collapse">

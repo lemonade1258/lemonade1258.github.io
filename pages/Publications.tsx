@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { getPublications } from "../lib/dataStore";
+import { fetchPublications } from "../lib/dataStore";
 import { Publication } from "../types";
 import { ArrowUpRight } from "lucide-react";
 
 const Publications: React.FC = () => {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [filter, setFilter] = useState<string>("All");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setPublications(getPublications());
+    const load = async () => {
+      try {
+        const data = await fetchPublications();
+        setPublications(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   const years = [
@@ -23,8 +34,16 @@ const Publications: React.FC = () => {
       ? publications
       : publications.filter((p) => p.year.toString() === filter);
 
-  // Group by year for display if 'All' is selected
+  // Group by year for display if 'All' is selected (Assuming backend already sorts, but client sort is safe)
   const displayedPubs = filteredPubs.sort((a, b) => b.year - a.year);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 text-center text-slate-400">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen pt-24 pb-20">
