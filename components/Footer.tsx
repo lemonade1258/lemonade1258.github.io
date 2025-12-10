@@ -1,6 +1,6 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Github, Code2 } from "lucide-react"; // Using Code2 as a proxy icon for HuggingFace if needed, or just text
+import { Github } from "lucide-react";
 
 const Footer: React.FC = () => {
   const { t } = useLanguage();
