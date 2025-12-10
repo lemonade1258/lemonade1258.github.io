@@ -52,41 +52,47 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
 
   return (
     <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-      <div className="flex flex-col md:flex-row">
-        {/* Avatar Side */}
-        <div className="md:w-64 md:flex-shrink-0 bg-slate-50 relative group">
-          <div className="aspect-[3/4] md:h-full w-full">
+      {/* 
+         Fix 1: items-start prevents the image from stretching vertically when text is long.
+         Fix 2: We use a fixed width for the image container on desktop (md:w-64) and let it be full width on mobile.
+      */}
+      <div className="flex flex-col md:flex-row items-start">
+        {/* Avatar Side - Fixed Aspect Ratio Container */}
+        <div className="w-full md:w-64 md:flex-shrink-0 bg-slate-50 relative group border-b md:border-b-0 md:border-r border-slate-100">
+          {/* Aspect Ratio 3:4 for standard portrait look */}
+          <div className="aspect-[3/4] w-full">
             <img
               src={person.avatar}
               alt={name}
-              className="w-full h-full object-cover transition-all duration-500"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
             />
           </div>
         </div>
 
         {/* Content Side */}
-        <div className="p-6 md:p-8 flex-grow flex flex-col">
-          <div className="flex justify-between items-start">
+        <div className="p-6 md:p-8 flex-grow flex flex-col w-full min-w-0">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
             <div>
-              <h3 className="text-2xl font-serif font-bold text-brand-dark mb-1">
+              <h3 className="text-2xl font-serif font-bold text-brand-dark mb-1 leading-tight">
                 {name}
               </h3>
               <p className="text-brand-red font-medium text-sm uppercase tracking-wide mb-2">
                 {title}
               </p>
               {position && (
-                <p className="text-slate-500 text-sm mb-4 italic">{position}</p>
+                <p className="text-slate-500 text-sm italic">{position}</p>
               )}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-shrink-0">
               {person.email && (
                 <a
                   href={`mailto:${person.email}`}
-                  className="text-slate-400 hover:text-brand-tech"
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-white hover:bg-brand-red transition-colors"
                   title={t("common.email")}
                 >
-                  <Mail size={18} />
+                  <Mail size={16} />
                 </a>
               )}
               {person.homepage && (
@@ -94,30 +100,39 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
                   href={person.homepage}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-slate-400 hover:text-brand-tech"
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-white hover:bg-brand-tech transition-colors"
                   title={t("common.website")}
                 >
-                  <Globe size={18} />
+                  <Globe size={16} />
                 </a>
               )}
             </div>
           </div>
 
-          <p className="text-slate-600 leading-relaxed font-light mb-6 flex-grow">
+          {/* 
+             Fix 3: Line Clamp. 
+             If NOT expanded, we clamp the text to 4 lines. 
+             If expanded, we show full text.
+          */}
+          <div
+            className={`text-slate-600 leading-relaxed font-light mb-6 relative ${
+              expanded ? "" : "line-clamp-4 md:line-clamp-5"
+            }`}
+          >
             {bio}
-          </p>
+          </div>
 
-          {/* Research Areas Tags */}
+          {/* Research Areas Tags - Always Visible */}
           {researchAreas && researchAreas.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
                 {t("people.profile.research")}
               </h4>
               <div className="flex flex-wrap gap-2">
                 {researchAreas.map((area, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 bg-brand-gray text-slate-600 text-xs rounded-full border border-slate-200"
+                    className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs rounded border border-slate-200"
                   >
                     {area}
                   </span>
@@ -126,16 +141,18 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
             </div>
           )}
 
-          {/* Expanded Details */}
+          {/* Expanded Details Section */}
           {expanded && person.teacherProfile && (
-            <div className="mt-4 pt-6 border-t border-slate-100 space-y-6 animate-fade-in">
+            <div className="mt-2 pt-6 border-t border-slate-100 space-y-6 animate-fade-in origin-top">
               {achievements && achievements.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2 text-brand-dark font-medium">
                     <Award size={16} className="text-brand-red" />
-                    <h4>{t("people.profile.achievements")}</h4>
+                    <h4 className="text-sm font-bold">
+                      {t("people.profile.achievements")}
+                    </h4>
                   </div>
-                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1">
+                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1.5 marker:text-slate-300">
                     {achievements.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -147,9 +164,11 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
                 <div>
                   <div className="flex items-center gap-2 mb-2 text-brand-dark font-medium">
                     <Briefcase size={16} className="text-brand-tech" />
-                    <h4>{t("people.profile.projects")}</h4>
+                    <h4 className="text-sm font-bold">
+                      {t("people.profile.projects")}
+                    </h4>
                   </div>
-                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1">
+                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1.5 marker:text-slate-300">
                     {projects.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -161,9 +180,11 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
                 <div>
                   <div className="flex items-center gap-2 mb-2 text-brand-dark font-medium">
                     <Star size={16} className="text-yellow-500" />
-                    <h4>{t("people.profile.influence")}</h4>
+                    <h4 className="text-sm font-bold">
+                      {t("people.profile.influence")}
+                    </h4>
                   </div>
-                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1">
+                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1.5 marker:text-slate-300">
                     {influence.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -173,16 +194,31 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
             </div>
           )}
 
-          {/* Toggle Button */}
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="self-start mt-2 text-brand-tech text-sm font-bold uppercase tracking-widest hover:underline flex items-center gap-1"
-          >
-            {expanded
-              ? t("people.profile.lessInfo")
-              : t("people.profile.moreInfo")}
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+          {/* Toggle Button - Pushed to bottom */}
+          <div className="mt-auto pt-2">
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-brand-red transition-colors"
+            >
+              {expanded ? (
+                <>
+                  {t("people.profile.lessInfo")}
+                  <ChevronUp
+                    size={14}
+                    className="group-hover:-translate-y-0.5 transition-transform"
+                  />
+                </>
+              ) : (
+                <>
+                  {t("people.profile.moreInfo")}
+                  <ChevronDown
+                    size={14}
+                    className="group-hover:translate-y-0.5 transition-transform"
+                  />
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -197,37 +233,39 @@ const StudentCard: React.FC<{ person: Person }> = ({ person }) => {
   const bio = isZh ? person.bioZh || person.bio : person.bio;
 
   return (
-    <div className="bg-white border border-slate-100 rounded p-4 hover:shadow-lg transition-all duration-300 group flex flex-col h-full">
+    <div className="bg-white border border-slate-100 rounded-lg p-5 hover:shadow-lg transition-all duration-300 group flex flex-col h-full hover:border-brand-red/20">
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-50 flex-shrink-0">
+        <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100">
           <img
             src={person.avatar}
             alt={name}
-            className="w-full h-full object-cover transition-all duration-500"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
           />
         </div>
-        <div>
-          <h3 className="font-serif font-bold text-slate-800 group-hover:text-brand-red transition-colors">
+        <div className="min-w-0">
+          <h3 className="font-serif font-bold text-slate-800 text-lg group-hover:text-brand-red transition-colors truncate">
             {name}
           </h3>
-          <p className="text-xs uppercase text-slate-400 font-medium">
+          <p className="text-xs uppercase text-slate-400 font-medium truncate">
             {title}
           </p>
           {person.grade && (
-            <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
+            <span className="inline-block mt-1 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
               {person.grade}
             </span>
           )}
         </div>
       </div>
-      <p className="text-sm text-slate-500 leading-relaxed font-light line-clamp-3 mb-4 flex-grow">
+      <p className="text-sm text-slate-500 leading-relaxed font-light line-clamp-4 mb-4 flex-grow">
         {bio}
       </p>
       {person.email && (
         <a
           href={`mailto:${person.email}`}
-          className="text-xs font-bold text-brand-tech self-start hover:underline"
+          className="text-xs font-bold text-slate-400 hover:text-brand-tech self-start flex items-center gap-1 transition-colors"
         >
+          <Mail size={12} />
           EMAIL
         </a>
       )}

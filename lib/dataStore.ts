@@ -111,12 +111,25 @@ export const uploadFile = async (file: File): Promise<string> => {
       },
       body: formData,
     });
+
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Upload failed: ${response.status} ${errText}`);
     }
+
     const data = await response.json();
-    return data.url; // Returns full URL from backend
+
+    // Ensure protocol consistency
+    let finalUrl = data.url;
+    if (
+      finalUrl &&
+      finalUrl.startsWith("http://") &&
+      window.location.protocol === "https:"
+    ) {
+      finalUrl = finalUrl.replace("http://", "https://");
+    }
+
+    return finalUrl;
   } catch (error) {
     console.error("Upload error:", error);
     throw error;
