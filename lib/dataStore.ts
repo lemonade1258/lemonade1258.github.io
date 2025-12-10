@@ -10,11 +10,15 @@ async function apiCall<T>(
   method: string = "GET",
   body?: any
 ): Promise<T> {
+  // Get token from storage
+  const token = localStorage.getItem("admin_token");
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
-    // Prevent caching headers
     Pragma: "no-cache",
     "Cache-Control": "no-cache",
+    // Add Authorization header if token exists
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
   const config: RequestInit = {
@@ -33,16 +37,21 @@ async function apiCall<T>(
         : `${API_BASE_URL}${endpoint}`;
 
     const response = await fetch(url, config);
+
+    // Handle 403 Forbidden (Token expired or invalid)
+    if (response.status === 403) {
+      // Optional: Trigger logout logic here or throw specific error
+      console.warn("Access forbidden. You might need to login again.");
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
-      // Try to parse error as JSON if possible, otherwise use text
       let errorMessage = errorText;
       try {
         const errorJson = JSON.parse(errorText);
         if (errorJson.message) errorMessage = errorJson.message;
       } catch (e) {}
 
-      // If error message looks like HTML (e.g. 500 Nginx/Express error page), simplify it
       if (errorMessage && errorMessage.trim().startsWith("<")) {
         errorMessage = "Server Internal Error. Please check backend logs.";
       }
@@ -58,14 +67,37 @@ async function apiCall<T>(
   }
 }
 
+// --- Auth API ---
+export const loginAdmin = async (
+  username: string,
+  password: string
+): Promise<{ success: boolean; token?: string; message?: string }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await response.json();
+    return data;
+  } catch (e: any) {
+    return { success: false, message: e.message || "Login failed" };
+  }
+};
+
 // --- Upload Helper ---
 export const uploadFile = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
+  const token = localStorage.getItem("admin_token");
 
   try {
     const response = await fetch(`${API_BASE_URL}/upload`, {
       method: "POST",
+      headers: {
+        // Do NOT set Content-Type header for FormData, browser does it automatically with boundary
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: formData,
     });
     if (!response.ok) {
