@@ -51,10 +51,8 @@ const Footer: React.FC = () => {
               {t("common.contact")}
             </h4>
             <ul className="space-y-3 text-sm text-slate-500">
-              <li>Computer Science Building</li>
-              <li>Room 502</li>
-              <li>{t("common.wuhanUniversity")}</li>
-              <li>Wuhan, China</li>
+              <li>{t("common.schoolName")}</li>
+              <li>{t("common.location")}</li>
             </ul>
           </div>
         </div>
