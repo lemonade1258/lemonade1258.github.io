@@ -30,11 +30,11 @@ const Navbar: React.FC = () => {
   };
 
   const links = [
-    { name: t("nav.tour"), path: "/" },
-    { name: t("nav.news"), path: "/news" },
+    { name: t("nav.about"), path: "/" },
     { name: t("nav.people"), path: "/people" },
-    // { name: t('nav.events'), path: '/events' }, // Removed
+    { name: t("nav.news"), path: "/news" },
     { name: t("nav.publications"), path: "/publications" },
+    { name: t("nav.projects"), path: "/projects" },
     { name: t("nav.contact"), path: "/contact" },
   ];
 
@@ -57,7 +57,6 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0 flex items-center gap-3">
             <NavLink to="/" className="group flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center rounded-full bg-brand-red/5 group-hover:bg-brand-red/10 transition-colors">
-                {/* Replaced Water Drop Image with Flame Icon */}
                 <Flame
                   className="text-brand-red w-6 h-6"
                   fill="currentColor"
@@ -82,7 +81,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6">
             <div className="flex space-x-8 text-sm tracking-wide">
               {links.map((link) => (
                 <NavLink
@@ -110,7 +109,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center md:hidden gap-4">
+          <div className="flex items-center lg:hidden gap-4">
             <button
               onClick={toggleLanguage}
               className="flex items-center gap-1 text-xs font-bold text-slate-500"
@@ -135,7 +134,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-b border-slate-100 h-screen animate-fade-in">
+        <div className="lg:hidden bg-white border-b border-slate-100 h-screen animate-fade-in">
           <div className="px-6 pt-8 pb-3 space-y-4">
             {links.map((link) => (
               <NavLink

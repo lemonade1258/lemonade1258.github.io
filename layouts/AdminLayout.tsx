@@ -8,6 +8,7 @@ import {
   Flame,
   BookOpen,
   MapPin,
+  Box,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -33,13 +34,17 @@ const AdminLayout: React.FC = () => {
       <aside className="w-64 bg-slate-900 text-white fixed h-full z-20 hidden md:flex flex-col">
         <div className="h-20 flex items-center px-6 border-b border-white/10">
           <Flame className="w-6 h-6 text-brand-red mr-3" />
-          <span className="font-bold tracking-wider">CLAIN ADMIN</span>
+          <span className="font-bold tracking-wider">CLAIR ADMIN</span>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">
           <NavLink to="/admin/dashboard" className={navClass}>
             <LayoutDashboard size={18} />
             Dashboard
+          </NavLink>
+          <NavLink to="/admin/contact" className={navClass}>
+            <MapPin size={18} />
+            Site Settings
           </NavLink>
           <NavLink to="/admin/news" className={navClass}>
             <Newspaper size={18} />
@@ -53,9 +58,9 @@ const AdminLayout: React.FC = () => {
             <BookOpen size={18} />
             Publications
           </NavLink>
-          <NavLink to="/admin/contact" className={navClass}>
-            <MapPin size={18} />
-            Contact Info
+          <NavLink to="/admin/projects" className={navClass}>
+            <Box size={18} />
+            Projects
           </NavLink>
         </nav>
 
@@ -74,7 +79,7 @@ const AdminLayout: React.FC = () => {
       <main className="flex-1 md:ml-64 min-h-screen flex flex-col">
         {/* Mobile Header */}
         <header className="md:hidden h-16 bg-slate-900 text-white flex items-center justify-between px-4">
-          <span className="font-bold">CLAIN ADMIN</span>
+          <span className="font-bold">CLAIR ADMIN</span>
           <button onClick={handleLogout}>
             <LogOut size={18} />
           </button>
@@ -85,7 +90,7 @@ const AdminLayout: React.FC = () => {
         </div>
 
         <footer className="px-8 py-4 text-center text-xs text-slate-400 border-t border-slate-200">
-          NextGen Admin System v2.1
+          NextGen Admin System v2.2
         </footer>
       </main>
     </div>

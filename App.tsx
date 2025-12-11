@@ -9,12 +9,12 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Tour from "./pages/Tour";
+import Tour from "./pages/Tour"; // This is now "About" visually
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import People from "./pages/People";
-// import Events from './pages/Events'; // Removed
 import Publications from "./pages/Publications";
+import Projects from "./pages/Projects";
 import Contact from "./pages/Contact";
 
 // Admin Imports
@@ -23,6 +23,7 @@ import AdminLogin from "./pages/admin/Login";
 import NewsManager from "./pages/admin/NewsManager";
 import PeopleManager from "./pages/admin/PeopleManager";
 import PublicationManager from "./pages/admin/PublicationManager";
+import ProjectManager from "./pages/admin/ProjectManager";
 import ContactManager from "./pages/admin/ContactManager";
 
 // Contexts
@@ -66,8 +67,8 @@ const App: React.FC = () => {
               <Route path="/news" element={<News />} />
               <Route path="/news/:id" element={<NewsDetail />} />
               <Route path="/people" element={<People />} />
-              {/* <Route path="/events" element={<Events />} /> Removed */}
               <Route path="/publications" element={<Publications />} />
+              <Route path="/projects" element={<Projects />} />
               <Route path="/contact" element={<Contact />} />
             </Route>
 
@@ -81,7 +82,7 @@ const App: React.FC = () => {
                   element={
                     <div className="bg-white p-8 rounded shadow text-center py-20">
                       <h1 className="text-3xl font-bold text-slate-800 mb-4">
-                        Welcome to CLAIN Dashboard
+                        Welcome to CLAIR Dashboard
                       </h1>
                       <p className="text-slate-500">
                         Select a module from the sidebar to manage content.
@@ -92,6 +93,7 @@ const App: React.FC = () => {
                 <Route path="news" element={<NewsManager />} />
                 <Route path="people" element={<PeopleManager />} />
                 <Route path="publications" element={<PublicationManager />} />
+                <Route path="projects" element={<ProjectManager />} />
                 <Route path="contact" element={<ContactManager />} />
               </Route>
             </Route>

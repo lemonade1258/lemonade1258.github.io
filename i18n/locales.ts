@@ -18,19 +18,22 @@ export const translations = {
       schoolName: "School of Artificial Intelligence, Wuhan University",
       location: "Wuhan, China",
       labFullName: "Center for Language and Information Research",
-      labName: "CLAIN",
+      labName: "CLAIR",
       hiring: "Join Us",
+      researchAreas: "Research Areas",
+      partners: "Collaborating Institutions",
     },
     nav: {
-      tour: "Tour",
+      about: "About",
       news: "News",
       people: "People",
-      // events: "Events", // Removed
       publications: "Publications",
+      projects: "Projects",
       contact: "Contact",
       admin: "Admin",
     },
     hero: {
+      // These might not be used in new design, but keeping for compatibility
       subtitle: "Next Generation Laboratory",
       title_1: "Language,",
       title_2: "Information",
@@ -42,14 +45,6 @@ export const translations = {
     },
     sections: {
       connectivity: "Global Connectivity",
-      connectivity_desc:
-        "Designing robust distributed systems that scale across borders, ensuring low-latency access to information worldwide.",
-      reasoning: "Machine Reasoning",
-      reasoning_desc:
-        "Pushing the boundaries of Large Language Models to move beyond pattern matching into genuine reasoning and planning.",
-      social: "Social Computing",
-      social_desc:
-        "Understanding how information spreads in social networks and developing tools to combat misinformation.",
       updates: "Latest Updates",
       viewArchive: "View Archive",
       read: "Read",
@@ -90,6 +85,16 @@ export const translations = {
       filterYear: "Filter Year",
       noPubs: "No publications found for the selected year.",
     },
+    projects: {
+      title: "Projects",
+      subtitle: "Featured models, datasets, and open-source contributions.",
+      try: "Try Online",
+      github: "GitHub",
+      model: "Model",
+      dataset: "Dataset",
+      paper: "Paper",
+      other: "Link",
+    },
     contact: {
       inquiries: "Inquiries",
       general: "General",
@@ -101,7 +106,8 @@ export const translations = {
       news: "News & Updates",
       people: "People Management",
       publications: "Publications",
-      contact: "Contact Info",
+      projects: "Projects",
+      contact: "Site Settings",
       logout: "Logout",
       login: "Admin Login",
       welcome: "Welcome back, Administrator",
@@ -140,15 +146,17 @@ export const translations = {
       schoolName: "武汉大学人工智能学院",
       location: "中国武汉",
       labFullName: "语言与信息研究中心",
-      labName: "CLAIN",
+      labName: "CLAIR",
       hiring: "加入我们",
+      researchAreas: "研究领域",
+      partners: "合作机构",
     },
     nav: {
-      tour: "导览",
+      about: "关于我们",
       news: "新闻动态",
       people: "团队成员",
-      // events: "学术活动", // Removed
       publications: "论文发表",
+      projects: "项目展示",
       contact: "联系我们",
       admin: "后台管理",
     },
@@ -164,14 +172,6 @@ export const translations = {
     },
     sections: {
       connectivity: "全球互联",
-      connectivity_desc:
-        "设计能够跨越国界的大规模分布式系统，确保全球信息的低延迟访问。",
-      reasoning: "机器推理",
-      reasoning_desc:
-        "突破大语言模型的边界，从简单的模式匹配迈向真正的逻辑推理与规划。",
-      social: "社会计算",
-      social_desc:
-        "洞察信息在社交网络中的传播机制，开发能够对抗虚假信息的智能工具。",
       updates: "最新动态",
       viewArchive: "查看归档",
       read: "阅读",
@@ -211,6 +211,16 @@ export const translations = {
       filterYear: "筛选年份",
       noPubs: "该年份暂无论文数据。",
     },
+    projects: {
+      title: "项目展示",
+      subtitle: "精选模型、数据集与开源贡献。",
+      try: "在线体验",
+      github: "GitHub",
+      model: "模型下载",
+      dataset: "数据集",
+      paper: "相关论文",
+      other: "链接",
+    },
     contact: {
       inquiries: "咨询联系",
       general: "综合咨询",
@@ -222,7 +232,8 @@ export const translations = {
       news: "新闻管理",
       people: "人员管理",
       publications: "论文管理",
-      contact: "联系信息管理",
+      projects: "项目管理",
+      contact: "站点设置",
       logout: "退出登录",
       login: "管理员登录",
       welcome: "欢迎回来，管理员",

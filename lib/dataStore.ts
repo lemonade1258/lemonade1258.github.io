@@ -1,8 +1,12 @@
-import { NewsItem, Person, Publication, ContactInfo } from "../types";
+import { NewsItem, Person, Publication, ContactInfo, Project } from "../types";
 
 // Configuration
 // CHANGE THIS: Pointing to your Alibaba Cloud Server IP
 const API_BASE_URL = "http://59.110.163.47:5000/api";
+
+console.log(
+  `[CLAIR DataStore] Initialized. Connecting to API: ${API_BASE_URL}`
+);
 
 // --- Helper for Fetch ---
 async function apiCall<T>(
@@ -10,14 +14,12 @@ async function apiCall<T>(
   method: string = "GET",
   body?: any
 ): Promise<T> {
-  // Get token from storage
   const token = localStorage.getItem("admin_token");
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     Pragma: "no-cache",
     "Cache-Control": "no-cache",
-    // Add Authorization header if token exists
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
@@ -25,12 +27,10 @@ async function apiCall<T>(
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
-    // CRITICAL: Force browser to fetch fresh data from server
     cache: "no-store",
   };
 
   try {
-    // Add timestamp to URL to strictly bust cache
     const url =
       method === "GET"
         ? `${API_BASE_URL}${endpoint}?t=${Date.now()}`
@@ -38,7 +38,6 @@ async function apiCall<T>(
 
     const response = await fetch(url, config);
 
-    // Handle 403 Forbidden (Token expired or invalid)
     if (response.status === 403) {
       console.warn("Access forbidden. You might need to login again.");
     }
@@ -51,9 +50,8 @@ async function apiCall<T>(
         if (errorJson.message) errorMessage = errorJson.message;
       } catch (e) {}
 
-      // If error message looks like HTML (e.g. 500 Nginx/Express error page), simplify it
       if (errorMessage && errorMessage.trim().startsWith("<")) {
-        errorMessage = "Server Internal Error. Please check backend logs.";
+        errorMessage = `Server Internal Error (${response.status}). Please check backend logs.`;
       }
 
       throw new Error(errorMessage || response.statusText);
@@ -77,14 +75,12 @@ export const loginAdmin = async (
       body: JSON.stringify({ username, password }),
     });
 
-    // Get raw text first to handle potential HTML responses (like 404 or 500)
     const text = await response.text();
 
     try {
       const data = JSON.parse(text);
       return data;
     } catch (e) {
-      // If parsing fails, it implies the server returned HTML (likely 404 Not Found if server wasn't restarted)
       console.error("Login response was not JSON:", text);
       return {
         success: false,
@@ -92,7 +88,10 @@ export const loginAdmin = async (
       };
     }
   } catch (e: any) {
-    return { success: false, message: "Network Error: Cannot reach server." };
+    return {
+      success: false,
+      message: "Network Error: Cannot reach server. Is it running?",
+    };
   }
 };
 
@@ -106,7 +105,6 @@ export const uploadFile = async (file: File): Promise<string> => {
     const response = await fetch(`${API_BASE_URL}/upload`, {
       method: "POST",
       headers: {
-        // Do NOT set Content-Type header for FormData, browser does it automatically with boundary
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: formData,
@@ -119,7 +117,6 @@ export const uploadFile = async (file: File): Promise<string> => {
 
     const data = await response.json();
 
-    // Ensure protocol consistency
     let finalUrl = data.url;
     if (
       finalUrl &&
@@ -195,7 +192,24 @@ export const deletePublication = async (id: string): Promise<void> => {
   return apiCall<void>(`/publications/${id}`, "DELETE");
 };
 
-// --- Contact API ---
+// --- Projects API ---
+export const fetchProjects = async (): Promise<Project[]> => {
+  return apiCall<Project[]>("/projects");
+};
+
+export const createProject = async (proj: Project): Promise<Project> => {
+  return apiCall<Project>("/projects", "POST", proj);
+};
+
+export const updateProject = async (proj: Project): Promise<Project> => {
+  return apiCall<Project>(`/projects/${proj.id}`, "PUT", proj);
+};
+
+export const deleteProject = async (id: string): Promise<void> => {
+  return apiCall<void>(`/projects/${id}`, "DELETE");
+};
+
+// --- Contact (Site Settings) API ---
 export const fetchContact = async (): Promise<ContactInfo> => {
   return apiCall<ContactInfo>("/contact");
 };

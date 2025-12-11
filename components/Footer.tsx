@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <h3 className="text-brand-red font-bold text-lg mb-4 font-serif">
-              {t("common.labFullName")}
+              {t("common.labFullName")} (CLAIR)
             </h3>
             <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
               {t("hero.description")}
@@ -59,7 +59,7 @@ const Footer: React.FC = () => {
 
         <div className="border-t border-slate-100 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-400">
           <p>
-            &copy; {new Date().getFullYear()} CLAIN Lab. {t("common.copyright")}
+            &copy; {new Date().getFullYear()} CLAIR Lab. {t("common.copyright")}
           </p>
           <p className="mt-2 md:mt-0">{t("common.designedBy")}</p>
         </div>

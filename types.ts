@@ -9,6 +9,21 @@ export interface Publication {
   pdf?: string; // Kept for backward compatibility but won't be used in UI
 }
 
+export interface ProjectLink {
+  label: "Try Online" | "GitHub" | "Model" | "Dataset" | "Paper" | "Other";
+  url: string;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  content?: string; // HTML details
+  image?: string;
+  links: ProjectLink[];
+  order?: number;
+}
+
 export type PersonCategory =
   | "Teachers"
   | "Visiting Scholars"
@@ -81,6 +96,12 @@ export interface NewsItem {
   isPublished?: boolean;
 }
 
+export interface Partner {
+  name: string;
+  logo: string;
+  link?: string;
+}
+
 export interface ContactInfo {
   // Address
   addressEn: string;
@@ -90,7 +111,7 @@ export interface ContactInfo {
   emailGeneral: string;
   emailAdmissions: string;
 
-  // Intro Text
+  // Intro Text (Contact Page)
   introEn: string;
   introZh: string;
 
@@ -102,8 +123,21 @@ export interface ContactInfo {
   // Map
   mapEmbedUrl: string;
 
-  // Homepage Hero Carousel
-  heroImages?: string[];
+  // Homepage Settings
+  heroImages?: string[]; // Carousel
+
+  // Homepage Welcome Text
+  welcomeTitleEn?: string;
+  welcomeTitleZh?: string;
+  welcomeTextEn?: string;
+  welcomeTextZh?: string;
+
+  // Homepage Research Areas
+  researchAreasTextEn?: string; // Allow multiline text
+  researchAreasTextZh?: string;
+
+  // Partners
+  partners?: Partner[];
 }
 
 export interface EventItem {
