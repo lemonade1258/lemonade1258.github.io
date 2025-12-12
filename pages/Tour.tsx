@@ -44,22 +44,37 @@ const Tour: React.FC = () => {
 
   const isZh = language === "zh";
 
+  // Helper to get text with fallback: Preferred Lang -> Other Lang -> Default
+  const getText = (zh?: string, en?: string, defaultText: string = "") => {
+    if (isZh) return zh || en || defaultText;
+    return en || zh || defaultText;
+  };
+
+  // Content Text
+  const welcomeTitle = getText(
+    contactInfo?.welcomeTitleZh,
+    contactInfo?.welcomeTitleEn,
+    isZh
+      ? "欢迎来到语言与信息研究中心 (CLAIR)! 👋"
+      : "Welcome to the Center for Language and Information Research (CLAIR)! 👋"
+  );
+
+  const welcomeText = getText(
+    contactInfo?.welcomeTextZh,
+    contactInfo?.welcomeTextEn,
+    ""
+  );
+
+  const researchText = getText(
+    contactInfo?.researchAreasTextZh,
+    contactInfo?.researchAreasTextEn,
+    ""
+  );
+
   // Carousel Images
   const hasCustomImages =
     contactInfo?.heroImages && contactInfo.heroImages.length > 0;
   const heroImages = hasCustomImages ? contactInfo.heroImages! : [];
-
-  // Content Text
-  const welcomeTitle = isZh
-    ? contactInfo?.welcomeTitleZh || "欢迎来到语言与信息研究中心 (CLAIR)! 👋"
-    : contactInfo?.welcomeTitleEn ||
-      "Welcome to the Center for Language and Information Research (CLAIR)! 👋";
-  const welcomeText = isZh
-    ? contactInfo?.welcomeTextZh || ""
-    : contactInfo?.welcomeTextEn || "";
-  const researchText = isZh
-    ? contactInfo?.researchAreasTextZh || ""
-    : contactInfo?.researchAreasTextEn || "";
 
   // Partners
   const partners = contactInfo?.partners || [];
@@ -69,7 +84,13 @@ const Tour: React.FC = () => {
       {/* 1. Welcome Section */}
       <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-medium text-brand-dark mb-8 leading-tight">
-          {welcomeTitle}
+          {loading ? (
+            <span className="animate-pulse bg-slate-200 text-transparent rounded">
+              Loading Title...
+            </span>
+          ) : (
+            welcomeTitle
+          )}
         </h1>
         <p className="text-lg md:text-xl text-slate-500 font-light leading-relaxed whitespace-pre-line max-w-4xl mx-auto">
           {welcomeText}
@@ -85,26 +106,26 @@ const Tour: React.FC = () => {
             </div>
           )}
 
-          {heroImages.length > 0 ? (
-            heroImages.map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`Lab Showcase ${idx + 1}`}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-                  idx === currentImageIndex
-                    ? "opacity-100 scale-105"
-                    : "opacity-0 scale-100"
-                }`}
-                style={{ transitionProperty: "opacity, transform" }}
-              />
-            ))
-          ) : (
-            // Empty Placeholder if no images, but keeps space
-            <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
-              <Flame className="w-16 h-16 text-slate-200" />
-            </div>
-          )}
+          {!loading && heroImages.length > 0
+            ? heroImages.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`Lab Showcase ${idx + 1}`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                    idx === currentImageIndex
+                      ? "opacity-100 scale-105"
+                      : "opacity-0 scale-100"
+                  }`}
+                  style={{ transitionProperty: "opacity, transform" }}
+                />
+              ))
+            : // Empty Placeholder if no images
+              !loading && (
+                <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
+                  <Flame className="w-16 h-16 text-slate-200" />
+                </div>
+              )}
 
           {/* Indicators */}
           {heroImages.length > 1 && (
@@ -134,9 +155,14 @@ const Tour: React.FC = () => {
           {t("common.researchAreas")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-slate-600 leading-relaxed font-light text-lg">
-          {/* Changed to whitespace-pre-wrap to better handle newlines entered in textarea */}
           <div className="whitespace-pre-wrap bg-slate-50 p-8 rounded-lg border border-slate-100">
-            {researchText}
+            {loading
+              ? "Loading..."
+              : researchText || (
+                  <span className="text-slate-400 italic">
+                    No content set. Please configure in Site Settings.
+                  </span>
+                )}
           </div>
           <div className="flex flex-col justify-center space-y-6">
             {/* Right side teaser for news or publications */}
@@ -194,7 +220,7 @@ const Tour: React.FC = () => {
             {t("common.partners")}
           </h2>
 
-          {partners.length > 0 ? (
+          {!loading && partners.length > 0 ? (
             <div className="flex flex-wrap justify-center items-center gap-12 opacity-70">
               {partners.map((partner, idx) => (
                 <a
@@ -215,7 +241,7 @@ const Tour: React.FC = () => {
             </div>
           ) : (
             <div className="h-32 border-2 border-dashed border-slate-100 rounded-lg flex items-center justify-center text-slate-300 italic">
-              {t("common.noData")}
+              {loading ? "Loading..." : t("common.noData")}
             </div>
           )}
         </div>
