@@ -134,7 +134,8 @@ const Tour: React.FC = () => {
           {t("common.researchAreas")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-slate-600 leading-relaxed font-light text-lg">
-          <div className="whitespace-pre-line bg-slate-50 p-8 rounded-lg border border-slate-100">
+          {/* Changed to whitespace-pre-wrap to better handle newlines entered in textarea */}
+          <div className="whitespace-pre-wrap bg-slate-50 p-8 rounded-lg border border-slate-100">
             {researchText}
           </div>
           <div className="flex flex-col justify-center space-y-6">
@@ -202,7 +203,7 @@ const Tour: React.FC = () => {
                   target="_blank"
                   rel="noreferrer"
                   className="group transition-opacity hover:opacity-100"
-                  title={partner.name}
+                  title={isZh ? partner.nameZh || partner.name : partner.name}
                 >
                   <img
                     src={partner.logo}

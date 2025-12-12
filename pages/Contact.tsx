@@ -32,6 +32,24 @@ const Contact: React.FC = () => {
   const address = isZh ? contactInfo.addressZh : contactInfo.addressEn;
   const hiringText = isZh ? contactInfo.hiringTextZh : contactInfo.hiringTextEn;
 
+  // Helper to render multiple emails
+  const renderEmails = (emailString: string) => {
+    if (!emailString) return null;
+    return emailString.split(/[\n,;]+/).map((email, index) => {
+      const cleanEmail = email.trim();
+      if (!cleanEmail) return null;
+      return (
+        <a
+          key={index}
+          href={`mailto:${cleanEmail}`}
+          className="block text-lg text-slate-700 font-serif hover:text-brand-tech transition-colors break-all"
+        >
+          {cleanEmail}
+        </a>
+      );
+    });
+  };
+
   return (
     <div className="bg-white min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,29 +90,23 @@ const Contact: React.FC = () => {
                   {t("contact.inquiries")}
                 </h3>
               </div>
-              <div className="pl-6 border-l border-slate-200 group-hover:border-brand-red transition-colors duration-300 space-y-3">
-                <div>
-                  <span className="block text-xs uppercase text-slate-400 font-bold mb-1">
-                    {t("contact.general")}
-                  </span>
-                  <a
-                    href={`mailto:${contactInfo.emailGeneral}`}
-                    className="text-lg text-slate-700 font-serif hover:text-brand-tech transition-colors break-all"
-                  >
-                    {contactInfo.emailGeneral}
-                  </a>
-                </div>
-                <div>
-                  <span className="block text-xs uppercase text-slate-400 font-bold mb-1">
-                    {t("contact.admissions")}
-                  </span>
-                  <a
-                    href={`mailto:${contactInfo.emailAdmissions}`}
-                    className="text-lg text-slate-700 font-serif hover:text-brand-tech transition-colors break-all"
-                  >
-                    {contactInfo.emailAdmissions}
-                  </a>
-                </div>
+              <div className="pl-6 border-l border-slate-200 group-hover:border-brand-red transition-colors duration-300 space-y-6">
+                {contactInfo.emailGeneral && (
+                  <div>
+                    <span className="block text-xs uppercase text-slate-400 font-bold mb-1">
+                      {t("contact.general")}
+                    </span>
+                    {renderEmails(contactInfo.emailGeneral)}
+                  </div>
+                )}
+                {contactInfo.emailAdmissions && (
+                  <div>
+                    <span className="block text-xs uppercase text-slate-400 font-bold mb-1">
+                      {t("contact.admissions")}
+                    </span>
+                    {renderEmails(contactInfo.emailAdmissions)}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -111,7 +123,6 @@ const Contact: React.FC = () => {
                 <p className="text-slate-600 font-light leading-relaxed whitespace-pre-line">
                   {hiringText}
                 </p>
-                {/* View Open Positions Link Removed as requested */}
               </div>
             </div>
           </div>

@@ -98,6 +98,7 @@ export interface NewsItem {
 
 export interface Partner {
   name: string;
+  nameZh?: string;
   logo: string;
   link?: string;
 }

@@ -34,8 +34,8 @@ const News: React.FC = () => {
 
   return (
     <div className="bg-white min-h-screen pt-24 pb-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="mb-20 pt-10 border-b border-black pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="mb-20 pt-10 border-b border-slate-100 pb-8">
           <h1 className="text-5xl md:text-6xl font-serif text-brand-dark mb-6">
             {t("news.title")}
           </h1>
@@ -44,7 +44,7 @@ const News: React.FC = () => {
           </p>
         </header>
 
-        <div className="space-y-16">
+        <div className="space-y-16 max-w-5xl">
           {newsItems.length === 0 ? (
             <p className="text-slate-400 italic">{t("common.noData")}</p>
           ) : (

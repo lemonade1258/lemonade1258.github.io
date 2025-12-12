@@ -11,6 +11,8 @@ import {
   Home,
   FileText,
   Users,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -51,6 +53,7 @@ const ContactManager: React.FC = () => {
   // Partner State
   const [newPartner, setNewPartner] = useState<Partner>({
     name: "",
+    nameZh: "",
     logo: "",
     link: "",
   });
@@ -131,10 +134,10 @@ const ContactManager: React.FC = () => {
         ...prev,
         partners: [...(prev.partners || []), newPartner],
       }));
-      setNewPartner({ name: "", logo: "", link: "" });
+      setNewPartner({ name: "", nameZh: "", logo: "", link: "" });
       setHasUnsavedChanges(true);
     } else {
-      alert("Name and Logo URL are required");
+      alert("Name (En) and Logo URL are required");
     }
   };
 
@@ -142,6 +145,19 @@ const ContactManager: React.FC = () => {
     setData((prev) => {
       const list = [...(prev.partners || [])];
       list.splice(idx, 1);
+      return { ...prev, partners: list };
+    });
+    setHasUnsavedChanges(true);
+  };
+
+  const movePartner = (index: number, direction: "up" | "down") => {
+    setData((prev) => {
+      const list = [...(prev.partners || [])];
+      if (direction === "up" && index > 0) {
+        [list[index], list[index - 1]] = [list[index - 1], list[index]];
+      } else if (direction === "down" && index < list.length - 1) {
+        [list[index], list[index + 1]] = [list[index + 1], list[index]];
+      }
       return { ...prev, partners: list };
     });
     setHasUnsavedChanges(true);
@@ -365,38 +381,72 @@ const ContactManager: React.FC = () => {
                 <Users size={18} /> Collaborating Institutions
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="space-y-3 mb-6">
                   {(data.partners || []).map((p, idx) => (
                     <div
                       key={idx}
-                      className="border p-2 rounded relative group text-center"
+                      className="border p-2 rounded flex items-center justify-between bg-slate-50"
                     >
-                      <img
-                        src={p.logo}
-                        alt={p.name}
-                        className="h-12 w-full object-contain mb-2"
-                      />
-                      <p className="text-xs truncate">{p.name}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => movePartner(idx, "up")}
+                            disabled={idx === 0}
+                            className="p-1 rounded hover:bg-slate-200 disabled:opacity-30"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button
+                            onClick={() => movePartner(idx, "down")}
+                            disabled={idx === (data.partners?.length || 0) - 1}
+                            className="p-1 rounded hover:bg-slate-200 disabled:opacity-30"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                        </div>
+                        <img
+                          src={p.logo}
+                          alt={p.name}
+                          className="h-8 w-16 object-contain bg-white border"
+                        />
+                        <div>
+                          <p className="text-sm font-bold">{p.name}</p>
+                          {p.nameZh && (
+                            <p className="text-xs text-slate-500">{p.nameZh}</p>
+                          )}
+                        </div>
+                      </div>
                       <button
                         onClick={() => handleRemovePartner(idx)}
-                        className="absolute top-1 right-1 bg-red-50 text-red-600 p-1 rounded hover:bg-red-100 opacity-0 group-hover:opacity-100"
+                        className="text-red-500 hover:bg-red-50 p-2 rounded"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   ))}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-slate-50 p-4 rounded">
+
+                <div className="bg-slate-50 p-4 rounded space-y-3 border">
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      className="p-2 border rounded text-sm"
+                      placeholder="Name (En)"
+                      value={newPartner.name}
+                      onChange={(e) =>
+                        setNewPartner({ ...newPartner, name: e.target.value })
+                      }
+                    />
+                    <input
+                      className="p-2 border rounded text-sm"
+                      placeholder="Name (Zh) - Optional"
+                      value={newPartner.nameZh || ""}
+                      onChange={(e) =>
+                        setNewPartner({ ...newPartner, nameZh: e.target.value })
+                      }
+                    />
+                  </div>
                   <input
-                    className="p-2 border rounded text-sm"
-                    placeholder="Partner Name"
-                    value={newPartner.name}
-                    onChange={(e) =>
-                      setNewPartner({ ...newPartner, name: e.target.value })
-                    }
-                  />
-                  <input
-                    className="p-2 border rounded text-sm"
+                    className="w-full p-2 border rounded text-sm"
                     placeholder="Logo URL"
                     value={newPartner.logo}
                     onChange={(e) =>
@@ -414,9 +464,9 @@ const ContactManager: React.FC = () => {
                     />
                     <button
                       onClick={handleAddPartner}
-                      className="px-4 bg-brand-red text-white rounded text-sm"
+                      className="px-6 bg-brand-red text-white rounded text-sm font-bold"
                     >
-                      Add
+                      Add Partner
                     </button>
                   </div>
                 </div>
@@ -474,26 +524,47 @@ const ContactManager: React.FC = () => {
                 Emails & Map
               </div>
               <div className="p-6 space-y-4">
-                <input
-                  className="w-full p-2 border rounded"
-                  placeholder="General Email"
-                  value={data.emailGeneral}
-                  onChange={(e) => updateField("emailGeneral", e.target.value)}
-                />
-                <input
-                  className="w-full p-2 border rounded"
-                  placeholder="Admissions Email"
-                  value={data.emailAdmissions}
-                  onChange={(e) =>
-                    updateField("emailAdmissions", e.target.value)
-                  }
-                />
-                <textarea
-                  className="w-full p-2 border rounded font-mono text-xs"
-                  placeholder="Map Embed URL"
-                  value={data.mapEmbedUrl}
-                  onChange={(e) => updateField("mapEmbedUrl", e.target.value)}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 mb-1">
+                      General Email(s) - One per line
+                    </label>
+                    <textarea
+                      rows={2}
+                      className="w-full p-2 border rounded font-mono text-sm"
+                      placeholder="contact@whu-clair.edu.cn"
+                      value={data.emailGeneral}
+                      onChange={(e) =>
+                        updateField("emailGeneral", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 mb-1">
+                      Admissions Email(s) - One per line
+                    </label>
+                    <textarea
+                      rows={2}
+                      className="w-full p-2 border rounded font-mono text-sm"
+                      placeholder="admissions@whu-clair.edu.cn"
+                      value={data.emailAdmissions}
+                      onChange={(e) =>
+                        updateField("emailAdmissions", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-400 mb-1">
+                    Map Embed URL
+                  </label>
+                  <textarea
+                    className="w-full p-2 border rounded font-mono text-xs"
+                    placeholder="<iframe src...>"
+                    value={data.mapEmbedUrl}
+                    onChange={(e) => updateField("mapEmbedUrl", e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           </>
