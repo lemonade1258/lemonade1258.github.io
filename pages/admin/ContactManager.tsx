@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { fetchContact, saveContact, uploadFile } from "../../lib/dataStore";
+import {
+  fetchContact,
+  saveContact,
+  uploadFile,
+  clearCache,
+} from "../../lib/dataStore";
 import { ContactInfo, Partner } from "../../types";
 import {
   Save,
@@ -13,6 +18,7 @@ import {
   Users,
   ArrowUp,
   ArrowDown,
+  RefreshCw,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -47,6 +53,7 @@ const ContactManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<"home" | "contact">("home");
 
@@ -58,18 +65,21 @@ const ContactManager: React.FC = () => {
     link: "",
   });
 
+  const loadData = async () => {
+    setLoading(true);
+    setMsg(null);
+    try {
+      const d = await fetchContact();
+      setData({ ...defaultContact, ...d });
+    } catch (e: any) {
+      setMsg({ type: "error", text: e.message || "Failed to load settings." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const d = await fetchContact();
-        setData({ ...defaultContact, ...d });
-      } catch (e: any) {
-        setMsg({ type: "error", text: "Offline Mode." });
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    loadData();
   }, []);
 
   const updateField = (field: keyof ContactInfo, value: any) => {
@@ -79,13 +89,18 @@ const ContactManager: React.FC = () => {
 
   const handleSave = async () => {
     setMsg(null);
+    setIsSaving(true);
     try {
+      console.log("Saving data:", data);
       await saveContact(data);
-      setMsg({ type: "success", text: "Saved successfully!" });
+      clearCache(); // 重要：保存后立即清除前端缓存
+      setMsg({ type: "success", text: "Saved successfully! Cache cleared." });
       setHasUnsavedChanges(false);
       setTimeout(() => setMsg(null), 3000);
     } catch (err: any) {
-      setMsg({ type: "error", text: `Failed: ${err.message}` });
+      setMsg({ type: "error", text: `Save failed: ${err.message}` });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -165,32 +180,55 @@ const ContactManager: React.FC = () => {
 
   if (loading)
     return (
-      <div className="p-12 text-center text-slate-400">Loading settings...</div>
+      <div className="p-12 text-center text-slate-400 flex flex-col items-center gap-4">
+        <RefreshCw className="animate-spin" size={32} />
+        Loading settings from server...
+      </div>
     );
 
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full overflow-y-auto relative">
       <div className="flex justify-between items-center mb-6 sticky top-0 bg-white/95 z-10 py-2 border-b">
         <h2 className="text-2xl font-bold text-slate-800">Site Settings</h2>
-        <button
-          onClick={handleSave}
-          className={`px-6 py-2 text-white rounded flex items-center shadow-sm ${
-            hasUnsavedChanges ? "bg-brand-red animate-pulse" : "bg-slate-700"
-          }`}
-        >
-          <Save size={18} className="mr-2" /> Save
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={loadData}
+            className="px-3 py-2 text-slate-500 hover:text-brand-dark rounded flex items-center gap-1 border"
+          >
+            <RefreshCw size={16} /> Refresh
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`px-6 py-2 text-white rounded flex items-center shadow-sm transition-all ${
+              isSaving
+                ? "bg-slate-400 opacity-50"
+                : hasUnsavedChanges
+                ? "bg-brand-red animate-pulse"
+                : "bg-slate-700"
+            }`}
+          >
+            {isSaving ? (
+              "Saving..."
+            ) : (
+              <>
+                <Save size={18} className="mr-2" /> Save Changes
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {msg && (
         <div
-          className={`p-4 rounded-md mb-6 ${
+          className={`p-4 rounded-md mb-6 flex items-start gap-3 border ${
             msg.type === "error"
-              ? "bg-red-50 text-red-800"
-              : "bg-green-50 text-green-800"
+              ? "bg-red-50 text-red-800 border-red-100"
+              : "bg-green-50 text-green-800 border-green-100"
           }`}
         >
-          {msg.text}
+          <AlertCircle className="shrink-0 mt-0.5" size={18} />
+          <div className="text-sm font-medium">{msg.text}</div>
         </div>
       )}
 
@@ -283,64 +321,7 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
-            {/* 2. Carousel */}
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
-              <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
-                <ImageIcon size={18} /> Homepage Carousel
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  {(data.heroImages || []).map((img, idx) => (
-                    <div
-                      key={idx}
-                      className="relative group aspect-video bg-slate-100 rounded overflow-hidden"
-                    >
-                      <img
-                        src={img}
-                        alt="slide"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    className="flex-grow p-2 border rounded text-sm"
-                    placeholder="Image URL"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                  />
-                  <button
-                    onClick={handleAddImage}
-                    className="px-4 py-2 bg-slate-800 text-white rounded text-sm"
-                  >
-                    Add URL
-                  </button>
-                  <label
-                    className={`cursor-pointer px-4 py-2 bg-white border rounded hover:bg-slate-50 text-sm ${
-                      uploading ? "opacity-50" : ""
-                    }`}
-                  >
-                    {uploading ? "..." : <Upload size={16} />}
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      disabled={uploading}
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Research Areas */}
+            {/* 2. Research Areas */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <FileText size={18} /> Research Areas
@@ -375,7 +356,7 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
-            {/* 4. Partners */}
+            {/* 3. Partners */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Users size={18} /> Collaborating Institutions
