@@ -1,12 +1,12 @@
 import { NewsItem, Person, Publication, ContactInfo, Project } from "../types";
 
 /**
- * CLAIR DataStore & API Client
+ * CLAIR DataStore & API Client - V4
  */
 
 const API_BASE_URL = "http://59.110.163.47:5000/api";
-const CACHE_PREFIX = "clair_cache_v3_";
-const CACHE_TTL = 3 * 60 * 1000; // 3 minutes for public
+const CACHE_PREFIX = "clair_cache_v4_"; // 版本号升级，强制失效旧数据
+const CACHE_TTL = 1 * 60 * 1000; // 公众访问缓存缩短至 1 分钟
 
 // --- Cache Helper ---
 const getCache = (key: string) => {
@@ -31,16 +31,19 @@ const setCache = (key: string, data: any) => {
   } catch (e) {}
 };
 
+/**
+ * 修复：只清除数据缓存，不清除登录令牌(admin_token)
+ */
 export const clearCache = () => {
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith(CACHE_PREFIX)) {
       localStorage.removeItem(key);
     }
   });
-  console.log("[DataStore] Cache Cleared.");
+  console.log("[DataStore] Data cache cleared. Admin token remains safe.");
 };
 
-// --- API Wrapper with Timeout & Cache Control ---
+// --- API Wrapper ---
 async function apiCall<T>(
   endpoint: string,
   method: string = "GET",
@@ -50,7 +53,7 @@ async function apiCall<T>(
   const isAdmin = !!token;
   const isRead = method === "GET";
 
-  // 1. 管理员操作或非读取请求 -> 永远不使用缓存，且操作后清除缓存
+  // 1. 管理员操作永远不使用缓存
   if (isRead && !isAdmin) {
     const cached = getCache(endpoint);
     if (cached) return cached;
@@ -61,22 +64,13 @@ async function apiCall<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  // 设置 10 秒超时
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
-
   try {
-    console.log(`[API] ${method} ${endpoint}`);
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
-      signal: controller.signal,
-      // 强制不使用浏览器自带缓存
-      cache: isAdmin ? "no-store" : "default",
+      cache: "no-store", // 禁用浏览器原始缓存
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
@@ -85,21 +79,16 @@ async function apiCall<T>(
 
     const data = await response.json();
 
-    // 2. 只有公共读取请求才存缓存
     if (isRead && !isAdmin) setCache(endpoint, data);
 
-    // 3. 任何写入操作后清空所有缓存
+    // 2. 任何修改操作后清空数据缓存，但保留 Token
     if (!isRead) clearCache();
 
     return data;
   } catch (error: any) {
-    clearTimeout(timeoutId);
-    if (error.name === "AbortError") {
-      throw new Error("请求超时，后端响应太慢或网络不稳定。");
-    }
     if (error.name === "TypeError") {
       throw new Error(
-        "连接失败。如果站点是 HTTPS 而 API 是 HTTP，请检查浏览器是否拦截了不安全内容。"
+        "连接失败。请确保后端 5000 端口已开放，且浏览器未拦截 HTTP 请求。"
       );
     }
     throw error;

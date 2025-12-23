@@ -20,7 +20,6 @@ const Tour: React.FC = () => {
           fetchContact(),
           fetchNews(),
         ]);
-        console.log("[Home] Data Received:", contactData);
         setContactInfo(contactData);
         setNewsItems(newsData.slice(0, 3));
       } catch (err) {
@@ -46,13 +45,11 @@ const Tour: React.FC = () => {
 
   const isZh = language === "zh";
 
-  // Helper to get text with fallback
   const getText = (zh?: string, en?: string, defaultText: string = "") => {
     if (isZh) return zh || en || defaultText;
     return en || zh || defaultText;
   };
 
-  // Content Text
   const welcomeTitle = getText(
     contactInfo?.welcomeTitleZh,
     contactInfo?.welcomeTitleEn,
@@ -94,15 +91,9 @@ const Tour: React.FC = () => {
         )}
       </section>
 
-      {/* 2. Carousel Section */}
+      {/* 2. Carousel */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
         <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-100 rounded-lg overflow-hidden shadow-sm border border-slate-100">
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-              Loading...
-            </div>
-          )}
-
           {!loading && heroImages.length > 0
             ? heroImages.map((img, idx) => (
                 <img
@@ -122,38 +113,36 @@ const Tour: React.FC = () => {
                   <Flame className="w-16 h-16 text-slate-200" />
                 </div>
               )}
-
-          {!loading && heroImages.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-              {heroImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    idx === currentImageIndex
-                      ? "bg-white scale-125"
-                      : "bg-white/40 hover:bg-white/80"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
-      <div className="w-full h-px bg-slate-100 max-w-7xl mx-auto"></div>
-
-      {/* 3. Research Areas */}
-      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 3. Research Areas (HTML Enabled) */}
+      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100">
         <h2 className="text-3xl font-serif font-medium text-brand-dark mb-12 text-center">
           {t("common.researchAreas")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-slate-600 leading-relaxed font-light text-lg">
-          <div className="whitespace-pre-wrap bg-slate-50 p-8 rounded-lg border border-slate-100">
-            {loading ? "..." : researchText || t("common.noData")}
+          <div className="bg-slate-50 p-8 rounded-lg border border-slate-100">
+            {loading ? (
+              <div className="space-y-3 animate-pulse">
+                <div className="h-4 bg-slate-200 rounded w-full"></div>
+                <div className="h-4 bg-slate-200 rounded w-5/6"></div>
+                <div className="h-4 bg-slate-200 rounded w-4/6"></div>
+              </div>
+            ) : (
+              <div
+                className="prose prose-slate prose-sm md:prose-base max-w-none 
+                        prose-p:text-slate-600 prose-p:leading-relaxed prose-p:font-light
+                        prose-strong:text-brand-dark prose-strong:font-bold
+                        prose-ul:list-disc prose-ul:pl-4 prose-li:text-slate-500"
+                dangerouslySetInnerHTML={{
+                  __html: researchText || t("common.noData"),
+                }}
+              />
+            )}
           </div>
           <div className="flex flex-col justify-center space-y-6">
-            <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors group">
+            <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors group bg-white shadow-sm">
               <h3 className="font-bold text-brand-dark mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-brand-red rounded-full"></span>
                 {t("nav.news")}
@@ -178,7 +167,7 @@ const Tour: React.FC = () => {
               </Link>
             </div>
 
-            <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors">
+            <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors bg-white shadow-sm">
               <h3 className="font-bold text-brand-dark mb-2 flex items-center gap-2">
                 <span className="w-2 h-2 bg-brand-tech rounded-full"></span>
                 {t("nav.publications")}
@@ -198,34 +187,39 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Partners */}
-      <section className="py-16 bg-white border-t border-slate-100">
+      {/* 4. Partners (No Grayscale, Improved UI) */}
+      <section className="py-16 bg-slate-50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-serif font-medium text-brand-dark mb-10 text-center">
             {t("common.partners")}
           </h2>
 
           {!loading && partners.length > 0 ? (
-            <div className="flex flex-wrap justify-center items-center gap-12">
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
               {partners.map((partner, idx) => (
                 <a
                   key={idx}
                   href={partner.link || "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="group transition-opacity opacity-60 hover:opacity-100"
+                  className="group transition-transform duration-300 hover:-translate-y-2"
                   title={getText(partner.nameZh, partner.name)}
                 >
-                  <img
-                    src={partner.logo}
-                    alt={partner.name}
-                    className="h-10 md:h-14 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-                  />
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100 group-hover:shadow-md transition-shadow flex items-center justify-center">
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="h-10 md:h-14 w-auto object-contain transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <p className="text-[10px] text-center mt-2 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {getText(partner.nameZh, partner.name)}
+                  </p>
                 </a>
               ))}
             </div>
           ) : (
-            <div className="h-32 border-2 border-dashed border-slate-100 rounded-lg flex items-center justify-center text-slate-300 italic">
+            <div className="h-32 flex items-center justify-center text-slate-300 italic">
               {loading ? "..." : t("common.noData")}
             </div>
           )}

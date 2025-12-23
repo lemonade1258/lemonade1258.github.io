@@ -10,15 +10,14 @@ import {
   Save,
   Plus,
   Trash2,
-  Upload,
-  ImageIcon,
-  AlertCircle,
   Home,
   FileText,
   Users,
   ArrowUp,
   ArrowDown,
   RefreshCw,
+  AlertCircle,
+  Info,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -51,13 +50,10 @@ const ContactManager: React.FC = () => {
     text: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [newImageUrl, setNewImageUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<"home" | "contact">("home");
 
-  // Partner State
   const [newPartner, setNewPartner] = useState<Partner>({
     name: "",
     nameZh: "",
@@ -67,7 +63,6 @@ const ContactManager: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    setMsg(null);
     try {
       const d = await fetchContact();
       setData({ ...defaultContact, ...d });
@@ -91,55 +86,15 @@ const ContactManager: React.FC = () => {
     setMsg(null);
     setIsSaving(true);
     try {
-      console.log("Saving data:", data);
       await saveContact(data);
-      clearCache(); // 重要：保存后立即清除前端缓存
-      setMsg({ type: "success", text: "Saved successfully! Cache cleared." });
+      clearCache(); // 现在只清除数据缓存，不会导致退出登录
+      setMsg({ type: "success", text: "Saved successfully! Content updated." });
       setHasUnsavedChanges(false);
-      setTimeout(() => setMsg(null), 3000);
+      setTimeout(() => setMsg(null), 4000);
     } catch (err: any) {
       setMsg({ type: "error", text: `Save failed: ${err.message}` });
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleAddImage = () => {
-    if (newImageUrl) {
-      setData((prev) => ({
-        ...prev,
-        heroImages: [...(prev.heroImages || []), newImageUrl],
-      }));
-      setNewImageUrl("");
-      setHasUnsavedChanges(true);
-    }
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setData((prev) => {
-      const newImages = [...(prev.heroImages || [])];
-      newImages.splice(index, 1);
-      return { ...prev, heroImages: newImages };
-    });
-    setHasUnsavedChanges(true);
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setUploading(true);
-      try {
-        const url = await uploadFile(e.target.files[0]);
-        setData((prev) => ({
-          ...prev,
-          heroImages: [...(prev.heroImages || []), url],
-        }));
-        setMsg({ type: "success", text: "Image uploaded!" });
-        setHasUnsavedChanges(true);
-      } catch (err: any) {
-        setMsg({ type: "error", text: `Upload failed: ${err.message}` });
-      } finally {
-        setUploading(false);
-      }
     }
   };
 
@@ -182,7 +137,7 @@ const ContactManager: React.FC = () => {
     return (
       <div className="p-12 text-center text-slate-400 flex flex-col items-center gap-4">
         <RefreshCw className="animate-spin" size={32} />
-        Loading settings from server...
+        Fetching settings...
       </div>
     );
 
@@ -221,7 +176,7 @@ const ContactManager: React.FC = () => {
 
       {msg && (
         <div
-          className={`p-4 rounded-md mb-6 flex items-start gap-3 border ${
+          className={`p-4 rounded-md mb-6 flex items-start gap-3 border animate-fade-in ${
             msg.type === "error"
               ? "bg-red-50 text-red-800 border-red-100"
               : "bg-green-50 text-green-800 border-green-100"
@@ -258,7 +213,6 @@ const ContactManager: React.FC = () => {
       <div className="space-y-8 pb-10">
         {activeTab === "home" && (
           <>
-            {/* 1. Welcome Section */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Home size={18} /> Welcome Message
@@ -321,19 +275,24 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
-            {/* 2. Research Areas */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-              <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
-                <FileText size={18} /> Research Areas
+              <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText size={18} /> Research Areas (HTML Supported)
+                </div>
+                <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                  <Info size={12} /> &lt;p&gt;, &lt;strong&gt;, &lt;ul&gt;,
+                  &lt;li&gt; allowed
+                </div>
               </div>
               <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-400 mb-1">
-                    Text (En) - Supports newlines
+                    HTML Content (En)
                   </label>
                   <textarea
-                    rows={6}
-                    className="w-full p-2 border rounded"
+                    rows={8}
+                    className="w-full p-2 border rounded font-mono text-sm bg-slate-50"
                     value={data.researchAreasTextEn || ""}
                     onChange={(e) =>
                       updateField("researchAreasTextEn", e.target.value)
@@ -342,11 +301,11 @@ const ContactManager: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-400 mb-1">
-                    Text (Zh) - Supports newlines
+                    HTML Content (Zh)
                   </label>
                   <textarea
-                    rows={6}
-                    className="w-full p-2 border rounded"
+                    rows={8}
+                    className="w-full p-2 border rounded font-mono text-sm bg-slate-50"
                     value={data.researchAreasTextZh || ""}
                     onChange={(e) =>
                       updateField("researchAreasTextZh", e.target.value)
@@ -356,58 +315,55 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
-            {/* 3. Partners */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Users size={18} /> Collaborating Institutions
               </div>
               <div className="p-6">
-                <div className="space-y-3 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
                   {(data.partners || []).map((p, idx) => (
                     <div
                       key={idx}
-                      className="border p-2 rounded flex items-center justify-between bg-slate-50"
+                      className="border p-3 rounded flex items-center gap-3 bg-white shadow-sm relative group"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="flex flex-col gap-1">
-                          <button
-                            onClick={() => movePartner(idx, "up")}
-                            disabled={idx === 0}
-                            className="p-1 rounded hover:bg-slate-200 disabled:opacity-30"
-                          >
-                            <ArrowUp size={14} />
-                          </button>
-                          <button
-                            onClick={() => movePartner(idx, "down")}
-                            disabled={idx === (data.partners?.length || 0) - 1}
-                            className="p-1 rounded hover:bg-slate-200 disabled:opacity-30"
-                          >
-                            <ArrowDown size={14} />
-                          </button>
-                        </div>
-                        <img
-                          src={p.logo}
-                          alt={p.name}
-                          className="h-8 w-16 object-contain bg-white border"
-                        />
-                        <div>
-                          <p className="text-sm font-bold">{p.name}</p>
-                          {p.nameZh && (
-                            <p className="text-xs text-slate-500">{p.nameZh}</p>
-                          )}
-                        </div>
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <button
+                          onClick={() => movePartner(idx, "up")}
+                          disabled={idx === 0}
+                          className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-30"
+                        >
+                          <ArrowUp size={12} />
+                        </button>
+                        <button
+                          onClick={() => movePartner(idx, "down")}
+                          disabled={idx === (data.partners?.length || 0) - 1}
+                          className="p-0.5 rounded hover:bg-slate-200 disabled:opacity-30"
+                        >
+                          <ArrowDown size={12} />
+                        </button>
+                      </div>
+                      <img
+                        src={p.logo}
+                        alt={p.name}
+                        className="h-10 w-16 object-contain bg-slate-50 p-1 border rounded"
+                      />
+                      <div className="min-w-0 flex-grow">
+                        <p className="text-xs font-bold truncate">{p.name}</p>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {p.nameZh || "---"}
+                        </p>
                       </div>
                       <button
                         onClick={() => handleRemovePartner(idx)}
-                        className="text-red-500 hover:bg-red-50 p-2 rounded"
+                        className="text-red-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded space-y-3 border">
+                <div className="bg-slate-50 p-4 rounded space-y-3 border-2 border-dashed border-slate-200">
                   <div className="grid grid-cols-2 gap-3">
                     <input
                       className="p-2 border rounded text-sm"
@@ -419,7 +375,7 @@ const ContactManager: React.FC = () => {
                     />
                     <input
                       className="p-2 border rounded text-sm"
-                      placeholder="Name (Zh) - Optional"
+                      placeholder="Name (Zh)"
                       value={newPartner.nameZh || ""}
                       onChange={(e) =>
                         setNewPartner({ ...newPartner, nameZh: e.target.value })
@@ -428,7 +384,7 @@ const ContactManager: React.FC = () => {
                   </div>
                   <input
                     className="w-full p-2 border rounded text-sm"
-                    placeholder="Logo URL"
+                    placeholder="Logo URL (Direct link to image)"
                     value={newPartner.logo}
                     onChange={(e) =>
                       setNewPartner({ ...newPartner, logo: e.target.value })
@@ -445,9 +401,9 @@ const ContactManager: React.FC = () => {
                     />
                     <button
                       onClick={handleAddPartner}
-                      className="px-6 bg-brand-red text-white rounded text-sm font-bold"
+                      className="px-6 bg-slate-800 text-white rounded text-sm font-bold hover:bg-brand-red transition-colors"
                     >
-                      Add Partner
+                      Add Institution
                     </button>
                   </div>
                 </div>
@@ -457,8 +413,7 @@ const ContactManager: React.FC = () => {
         )}
 
         {activeTab === "contact" && (
-          <>
-            {/* Address & Intro */}
+          <div className="space-y-8">
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700">
                 Contact Page Intro & Address
@@ -499,7 +454,6 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
-            {/* Emails & Map */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700">
                 Emails & Map
@@ -508,12 +462,11 @@ const ContactManager: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-400 mb-1">
-                      General Email(s) - One per line
+                      General Email(s)
                     </label>
                     <textarea
                       rows={2}
                       className="w-full p-2 border rounded font-mono text-sm"
-                      placeholder="contact@whu-clair.edu.cn"
                       value={data.emailGeneral}
                       onChange={(e) =>
                         updateField("emailGeneral", e.target.value)
@@ -522,12 +475,11 @@ const ContactManager: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-400 mb-1">
-                      Admissions Email(s) - One per line
+                      Admissions Email(s)
                     </label>
                     <textarea
                       rows={2}
                       className="w-full p-2 border rounded font-mono text-sm"
-                      placeholder="admissions@whu-clair.edu.cn"
                       value={data.emailAdmissions}
                       onChange={(e) =>
                         updateField("emailAdmissions", e.target.value)
@@ -541,14 +493,13 @@ const ContactManager: React.FC = () => {
                   </label>
                   <textarea
                     className="w-full p-2 border rounded font-mono text-xs"
-                    placeholder="<iframe src...>"
                     value={data.mapEmbedUrl}
                     onChange={(e) => updateField("mapEmbedUrl", e.target.value)}
                   />
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
