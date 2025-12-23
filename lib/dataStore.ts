@@ -2,22 +2,11 @@ import { NewsItem, Person, Publication, ContactInfo, Project } from "../types";
 
 /**
  * CLAIR DataStore & API Client
- * - Supports automatic local caching for performance
- * - Handles bilingual content retrieval
  */
 
-// 优先使用当前域名，如果是本地开发则回退到指定 IP
-const getBaseUrl = () => {
-  // 如果你在本地运行前端想连远程后端，手动改这里
-  const REMOTE_IP = "http://59.110.163.47:5000/api";
-  if (window.location.hostname === "localhost") return REMOTE_IP;
-  // 如果前后端部署在同一台机器且通过域名访问，通常可以相对路径或动态匹配
-  return `http://${window.location.hostname}:5000/api`;
-};
-
-const API_BASE_URL = "http://59.110.163.47:5000/api"; // 固定为你目前的后端地址
-const CACHE_PREFIX = "clair_cache_v2_";
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for public view
+const API_BASE_URL = "http://59.110.163.47:5000/api";
+const CACHE_PREFIX = "clair_cache_v3_";
+const CACHE_TTL = 3 * 60 * 1000; // 3 minutes for public
 
 // --- Cache Helper ---
 const getCache = (key: string) => {
@@ -48,20 +37,21 @@ export const clearCache = () => {
       localStorage.removeItem(key);
     }
   });
-  console.log("[Cache] All cleared.");
+  console.log("[DataStore] Cache Cleared.");
 };
 
-// --- API Wrapper ---
+// --- API Wrapper with Timeout & Cache Control ---
 async function apiCall<T>(
   endpoint: string,
   method: string = "GET",
   body?: any
 ): Promise<T> {
   const token = localStorage.getItem("admin_token");
+  const isAdmin = !!token;
   const isRead = method === "GET";
 
-  // 1. Try Cache
-  if (isRead && !token) {
+  // 1. 管理员操作或非读取请求 -> 永远不使用缓存，且操作后清除缓存
+  if (isRead && !isAdmin) {
     const cached = getCache(endpoint);
     if (cached) return cached;
   }
@@ -71,38 +61,52 @@ async function apiCall<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
+  // 设置 10 秒超时
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
   try {
+    console.log(`[API] ${method} ${endpoint}`);
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+      // 强制不使用浏览器自带缓存
+      cache: isAdmin ? "no-store" : "default",
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || `API Error: ${response.status}`);
+      throw new Error(errData.message || `HTTP ${response.status}`);
     }
 
     const data = await response.json();
 
-    // 2. Set Cache
-    if (isRead && !token) setCache(endpoint, data);
+    // 2. 只有公共读取请求才存缓存
+    if (isRead && !isAdmin) setCache(endpoint, data);
 
-    // 3. Clear on Change
+    // 3. 任何写入操作后清空所有缓存
     if (!isRead) clearCache();
 
     return data;
   } catch (error: any) {
-    if (error.name === "TypeError" && error.message.includes("fetch")) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error("请求超时，后端响应太慢或网络不稳定。");
+    }
+    if (error.name === "TypeError") {
       throw new Error(
-        "无法连接到后端服务器，请检查后端程序是否正在运行（node server.js）以及 5000 端口是否开放。"
+        "连接失败。如果站点是 HTTPS 而 API 是 HTTP，请检查浏览器是否拦截了不安全内容。"
       );
     }
     throw error;
   }
 }
 
-// --- Specific API Methods ---
+// --- API Methods ---
 export const loginAdmin = async (username: string, password: string) => {
   const res = await fetch(`${API_BASE_URL}/login`, {
     method: "POST",
@@ -163,5 +167,17 @@ export const saveContact = (data: ContactInfo) =>
   apiCall<ContactInfo>("/contact", "POST", data);
 
 export const exportToCSV = (data: any[], filename: string) => {
-  // ... existing CSV logic ...
+  if (!data.length) return;
+  const headers = Object.keys(data[0]);
+  const csvContent = [
+    headers.join(","),
+    ...data.map((row) =>
+      headers.map((v) => JSON.stringify(row[v] || "")).join(",")
+    ),
+  ].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
 };

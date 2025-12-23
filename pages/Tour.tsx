@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowRight, Flame } from "lucide-react";
+import { Flame } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchContact, fetchNews } from "../lib/dataStore";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -15,14 +15,16 @@ const Tour: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log("[Home] Fetching data...");
         const [contactData, newsData] = await Promise.all([
           fetchContact(),
           fetchNews(),
         ]);
+        console.log("[Home] Data Received:", contactData);
         setContactInfo(contactData);
         setNewsItems(newsData.slice(0, 3));
       } catch (err) {
-        console.error("Failed to load data for home", err);
+        console.error("[Home] Load Failed:", err);
       } finally {
         setLoading(false);
       }
@@ -30,21 +32,21 @@ const Tour: React.FC = () => {
     loadData();
   }, []);
 
-  // Carousel Logic
+  // Carousel
   useEffect(() => {
     if (contactInfo?.heroImages && contactInfo.heroImages.length > 1) {
       const interval = setInterval(() => {
         setCurrentImageIndex(
           (prev) => (prev + 1) % contactInfo.heroImages!.length
         );
-      }, 5000); // Change every 5 seconds
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [contactInfo]);
 
   const isZh = language === "zh";
 
-  // Helper to get text with fallback: Preferred Lang -> Other Lang -> Default
+  // Helper to get text with fallback
   const getText = (zh?: string, en?: string, defaultText: string = "") => {
     if (isZh) return zh || en || defaultText;
     return en || zh || defaultText;
@@ -71,12 +73,7 @@ const Tour: React.FC = () => {
     ""
   );
 
-  // Carousel Images
-  const hasCustomImages =
-    contactInfo?.heroImages && contactInfo.heroImages.length > 0;
-  const heroImages = hasCustomImages ? contactInfo.heroImages! : [];
-
-  // Partners
+  const heroImages = contactInfo?.heroImages || [];
   const partners = contactInfo?.partners || [];
 
   return (
@@ -85,16 +82,16 @@ const Tour: React.FC = () => {
       <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-medium text-brand-dark mb-8 leading-tight">
           {loading ? (
-            <span className="animate-pulse bg-slate-200 text-transparent rounded">
-              Loading Title...
-            </span>
+            <span className="text-slate-200 animate-pulse">Loading...</span>
           ) : (
             welcomeTitle
           )}
         </h1>
-        <p className="text-lg md:text-xl text-slate-500 font-light leading-relaxed whitespace-pre-line max-w-4xl mx-auto">
-          {welcomeText}
-        </p>
+        {!loading && welcomeText && (
+          <p className="text-lg md:text-xl text-slate-500 font-light leading-relaxed whitespace-pre-line max-w-4xl mx-auto">
+            {welcomeText}
+          </p>
+        )}
       </section>
 
       {/* 2. Carousel Section */}
@@ -102,7 +99,7 @@ const Tour: React.FC = () => {
         <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-100 rounded-lg overflow-hidden shadow-sm border border-slate-100">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-              Loading Images...
+              Loading...
             </div>
           )}
 
@@ -111,7 +108,7 @@ const Tour: React.FC = () => {
                 <img
                   key={idx}
                   src={img}
-                  alt={`Lab Showcase ${idx + 1}`}
+                  alt={`Slide ${idx + 1}`}
                   className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
                     idx === currentImageIndex
                       ? "opacity-100 scale-105"
@@ -120,15 +117,13 @@ const Tour: React.FC = () => {
                   style={{ transitionProperty: "opacity, transform" }}
                 />
               ))
-            : // Empty Placeholder if no images
-              !loading && (
+            : !loading && (
                 <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
                   <Flame className="w-16 h-16 text-slate-200" />
                 </div>
               )}
 
-          {/* Indicators */}
-          {heroImages.length > 1 && (
+          {!loading && heroImages.length > 1 && (
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
               {heroImages.map((_, idx) => (
                 <button
@@ -139,7 +134,6 @@ const Tour: React.FC = () => {
                       ? "bg-white scale-125"
                       : "bg-white/40 hover:bg-white/80"
                   }`}
-                  aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
             </div>
@@ -156,18 +150,11 @@ const Tour: React.FC = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-slate-600 leading-relaxed font-light text-lg">
           <div className="whitespace-pre-wrap bg-slate-50 p-8 rounded-lg border border-slate-100">
-            {loading
-              ? "Loading..."
-              : researchText || (
-                  <span className="text-slate-400 italic">
-                    No content set. Please configure in Site Settings.
-                  </span>
-                )}
+            {loading ? "..." : researchText || t("common.noData")}
           </div>
           <div className="flex flex-col justify-center space-y-6">
-            {/* Right side teaser for news or publications */}
             <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors group">
-              <h3 className="font-bold text-brand-dark mb-2 flex items-center gap-2">
+              <h3 className="font-bold text-brand-dark mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-brand-red rounded-full"></span>
                 {t("nav.news")}
               </h3>
@@ -178,9 +165,7 @@ const Tour: React.FC = () => {
                       to={`/news/${item.id}`}
                       className="block text-sm text-slate-500 hover:text-brand-red transition-colors line-clamp-1"
                     >
-                      {isZh
-                        ? item.titleZh || item.title
-                        : item.title || item.titleZh}
+                      {getText(item.titleZh, item.title)}
                     </Link>
                   </li>
                 ))}
@@ -213,7 +198,7 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Partners / Collaborating Institutions */}
+      {/* 4. Partners */}
       <section className="py-16 bg-white border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-serif font-medium text-brand-dark mb-10 text-center">
@@ -221,27 +206,27 @@ const Tour: React.FC = () => {
           </h2>
 
           {!loading && partners.length > 0 ? (
-            <div className="flex flex-wrap justify-center items-center gap-12 opacity-70">
+            <div className="flex flex-wrap justify-center items-center gap-12">
               {partners.map((partner, idx) => (
                 <a
                   key={idx}
                   href={partner.link || "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="group transition-opacity hover:opacity-100"
-                  title={isZh ? partner.nameZh || partner.name : partner.name}
+                  className="group transition-opacity opacity-60 hover:opacity-100"
+                  title={getText(partner.nameZh, partner.name)}
                 >
                   <img
                     src={partner.logo}
                     alt={partner.name}
-                    className="h-12 md:h-16 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                    className="h-10 md:h-14 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
                   />
                 </a>
               ))}
             </div>
           ) : (
             <div className="h-32 border-2 border-dashed border-slate-100 rounded-lg flex items-center justify-center text-slate-300 italic">
-              {loading ? "Loading..." : t("common.noData")}
+              {loading ? "..." : t("common.noData")}
             </div>
           )}
         </div>
