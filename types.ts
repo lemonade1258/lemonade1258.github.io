@@ -6,7 +6,7 @@ export interface Publication {
   year: number;
   tags?: string[];
   link?: string;
-  pdf?: string; // Kept for backward compatibility but won't be used in UI
+  pdf?: string;
 }
 
 export interface ProjectLink {
@@ -18,7 +18,7 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  content?: string; // HTML details
+  content?: string;
   image?: string;
   links: ProjectLink[];
   order?: number;
@@ -38,7 +38,7 @@ export type PersonCategory =
 export interface TeacherProfile {
   position: string;
   positionZh?: string;
-  researchAreas: string[]; // stored as array
+  researchAreas: string[];
   researchAreasZh?: string[];
   achievements: string[];
   achievementsZh?: string[];
@@ -46,7 +46,7 @@ export interface TeacherProfile {
   projectsZh?: string[];
   honors?: string[];
   honorsZh?: string[];
-  influence?: string[]; // Community service, open source
+  influence?: string[];
   influenceZh?: string[];
   publications?: string[];
 }
@@ -56,40 +56,30 @@ export interface Person {
   name: string;
   nameZh?: string;
   category: PersonCategory;
-  title?: string; // e.g. "Professor", "Ph.D. Candidate"
+  title?: string;
   titleZh?: string;
   avatar: string;
   email?: string;
   homepage?: string;
-  bio: string; // Rich text or simple text
+  bio: string;
   bioZh?: string;
   order: number;
-
-  // Teacher Specific
   teacherProfile?: TeacherProfile;
-
-  // Student Specific
-  grade?: string; // e.g., "2023 Fall"
+  grade?: string;
   advisor?: string;
 }
 
 export interface NewsItem {
   id: string;
   date: string;
-
-  // English Fields
   title: string;
   subtitle?: string;
   summary: string;
-  content?: string; // HTML content
-
-  // Chinese Fields
+  content?: string;
   titleZh?: string;
   subtitleZh?: string;
   summaryZh?: string;
-  contentZh?: string; // HTML content
-
-  // Metadata
+  contentZh?: string;
   category: string;
   coverImage?: string;
   author?: string;
@@ -101,43 +91,27 @@ export interface Partner {
   nameZh?: string;
   logo: string;
   link?: string;
+  bgColor?: string; // Hex color string
 }
 
 export interface ContactInfo {
-  // Address
   addressEn: string;
   addressZh: string;
-
-  // Emails
   emailGeneral: string;
   emailAdmissions: string;
-
-  // Intro Text (Contact Page)
   introEn: string;
   introZh: string;
-
-  // Hiring
   hiringTextEn: string;
   hiringTextZh: string;
   hiringLink: string;
-
-  // Map
   mapEmbedUrl: string;
-
-  // Homepage Settings
-  heroImages?: string[]; // Carousel
-
-  // Homepage Welcome Text
+  heroImages?: string[];
   welcomeTitleEn?: string;
   welcomeTitleZh?: string;
   welcomeTextEn?: string;
   welcomeTextZh?: string;
-
-  // Homepage Research Areas
-  researchAreasTextEn?: string; // Allow multiline text
+  researchAreasTextEn?: string;
   researchAreasTextZh?: string;
-
-  // Partners
   partners?: Partner[];
 }
 

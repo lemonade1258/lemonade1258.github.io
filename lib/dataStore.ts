@@ -1,14 +1,9 @@
 import { NewsItem, Person, Publication, ContactInfo, Project } from "../types";
 
-/**
- * CLAIR DataStore & API Client - V4
- */
-
 const API_BASE_URL = "http://59.110.163.47:5000/api";
-const CACHE_PREFIX = "clair_cache_v4_"; // 版本号升级，强制失效旧数据
-const CACHE_TTL = 1 * 60 * 1000; // 公众访问缓存缩短至 1 分钟
+const CACHE_PREFIX = "clair_cache_v5_";
+const CACHE_TTL = 30 * 1000; // 缓存缩短至 30 秒
 
-// --- Cache Helper ---
 const getCache = (key: string) => {
   try {
     const item = localStorage.getItem(CACHE_PREFIX + key);
@@ -31,19 +26,14 @@ const setCache = (key: string, data: any) => {
   } catch (e) {}
 };
 
-/**
- * 修复：只清除数据缓存，不清除登录令牌(admin_token)
- */
 export const clearCache = () => {
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith(CACHE_PREFIX)) {
       localStorage.removeItem(key);
     }
   });
-  console.log("[DataStore] Data cache cleared. Admin token remains safe.");
 };
 
-// --- API Wrapper ---
 async function apiCall<T>(
   endpoint: string,
   method: string = "GET",
@@ -53,7 +43,6 @@ async function apiCall<T>(
   const isAdmin = !!token;
   const isRead = method === "GET";
 
-  // 1. 管理员操作永远不使用缓存
   if (isRead && !isAdmin) {
     const cached = getCache(endpoint);
     if (cached) return cached;
@@ -64,12 +53,18 @@ async function apiCall<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
+  // Add cache-busting timestamp for GET requests
+  const url = isRead
+    ? `${API_BASE_URL}${endpoint}${
+        endpoint.includes("?") ? "&" : "?"
+      }nocache=${Date.now()}`
+    : `${API_BASE_URL}${endpoint}`;
+
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(url, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
-      cache: "no-store", // 禁用浏览器原始缓存
     });
 
     if (!response.ok) {
@@ -78,24 +73,15 @@ async function apiCall<T>(
     }
 
     const data = await response.json();
-
     if (isRead && !isAdmin) setCache(endpoint, data);
-
-    // 2. 任何修改操作后清空数据缓存，但保留 Token
     if (!isRead) clearCache();
 
     return data;
   } catch (error: any) {
-    if (error.name === "TypeError") {
-      throw new Error(
-        "连接失败。请确保后端 5000 端口已开放，且浏览器未拦截 HTTP 请求。"
-      );
-    }
     throw error;
   }
 }
 
-// --- API Methods ---
 export const loginAdmin = async (username: string, password: string) => {
   const res = await fetch(`${API_BASE_URL}/login`, {
     method: "POST",

@@ -69,7 +69,6 @@ const Tour: React.FC = () => {
 
   return (
     <div className="bg-white">
-      {/* 1. Welcome Section */}
       <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-medium text-brand-dark mb-8 leading-tight">
           {loading ? (
@@ -85,7 +84,6 @@ const Tour: React.FC = () => {
         )}
       </section>
 
-      {/* 2. Carousel */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
         <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-100 rounded-lg overflow-hidden shadow-sm border border-slate-100">
           {!loading && contactInfo?.heroImages?.length
@@ -110,7 +108,6 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. Research Areas */}
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100">
         <h2 className="text-3xl font-serif font-medium text-brand-dark mb-12 text-center">
           {t("common.researchAreas")}
@@ -159,7 +156,6 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Partners - Uniform Height & Contrast Backgrounds */}
       <section className="py-24 bg-white border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-serif font-medium text-brand-dark mb-16 text-center">
@@ -176,17 +172,9 @@ const Tour: React.FC = () => {
                   rel="noreferrer"
                   className="group flex flex-col items-center animate-fade-in"
                 >
-                  {/* 
-                                  Uniform Height Container: 
-                                  - Fixed h-28 (7rem)
-                                  - theme check for contrast
-                              */}
                   <div
-                    className={`w-full h-28 rounded-xl border p-6 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 ${
-                      partner.theme === "dark"
-                        ? "bg-slate-800 border-slate-700 shadow-inner"
-                        : "bg-slate-50 border-slate-100 shadow-sm"
-                    }`}
+                    className="w-full h-28 rounded-xl border p-6 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1"
+                    style={{ backgroundColor: partner.bgColor || "#F8FAFC" }}
                   >
                     <img
                       src={partner.logo}

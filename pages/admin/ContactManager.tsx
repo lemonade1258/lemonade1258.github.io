@@ -10,13 +10,9 @@ import {
   Users,
   ArrowUp,
   ArrowDown,
-  RefreshCw,
-  AlertCircle,
-  Info,
   Edit2,
   X,
-  Sun,
-  Moon,
+  Pipette,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -44,10 +40,6 @@ const defaultContact: ContactInfo = {
 const ContactManager: React.FC = () => {
   const { t } = useLanguage();
   const [data, setData] = useState<ContactInfo>(defaultContact);
-  const [msg, setMsg] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -58,7 +50,7 @@ const ContactManager: React.FC = () => {
     nameZh: "",
     logo: "",
     link: "",
-    theme: "light",
+    bgColor: "#F8FAFC",
   });
   const [editingPartnerIndex, setEditingPartnerIndex] = useState<number | null>(
     null
@@ -69,8 +61,8 @@ const ContactManager: React.FC = () => {
     try {
       const d = await fetchContact();
       setData({ ...defaultContact, ...d });
-    } catch (e: any) {
-      setMsg({ type: "error", text: e.message || "Failed to load settings." });
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -86,16 +78,14 @@ const ContactManager: React.FC = () => {
   };
 
   const handleSave = async () => {
-    setMsg(null);
     setIsSaving(true);
     try {
       await saveContact(data);
       clearCache();
-      setMsg({ type: "success", text: "Saved successfully!" });
       setHasUnsavedChanges(false);
-      setTimeout(() => setMsg(null), 4000);
+      alert("Saved to server successfully!");
     } catch (err: any) {
-      setMsg({ type: "error", text: `Save failed: ${err.message}` });
+      alert(`Save failed: ${err.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -119,14 +109,14 @@ const ContactManager: React.FC = () => {
         nameZh: "",
         logo: "",
         link: "",
-        theme: "light",
+        bgColor: "#F8FAFC",
       });
       setHasUnsavedChanges(true);
     }
   };
 
   const handleEditPartner = (idx: number) => {
-    setNewPartner({ theme: "light", ...data.partners![idx] });
+    setNewPartner({ bgColor: "#F8FAFC", ...data.partners![idx] });
     setEditingPartnerIndex(idx);
     document
       .getElementById("partner-form")
@@ -134,7 +124,7 @@ const ContactManager: React.FC = () => {
   };
 
   const handleRemovePartner = (idx: number) => {
-    if (!confirm("Are you sure?")) return;
+    if (!confirm("Delete partner?")) return;
     setData((prev) => {
       const list = [...(prev.partners || [])];
       list.splice(idx, 1);
@@ -158,6 +148,8 @@ const ContactManager: React.FC = () => {
 
   if (loading)
     return <div className="p-12 text-center text-slate-400">Loading...</div>;
+
+  const presets = ["#FFFFFF", "#F8FAFC", "#111111", "#1E293B", "#A81C1C"];
 
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full overflow-y-auto relative">
@@ -205,7 +197,7 @@ const ContactManager: React.FC = () => {
       <div className="space-y-8 pb-10">
         {activeTab === "home" && (
           <>
-            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white mb-8">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Home size={18} /> Welcome Message
               </div>
@@ -251,7 +243,6 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
-            {/* Partners Admin */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Users size={18} /> Collaborating Institutions
@@ -268,9 +259,8 @@ const ContactManager: React.FC = () => {
                       }`}
                     >
                       <div
-                        className={`w-full h-20 rounded border flex items-center justify-center p-3 mb-2 ${
-                          p.theme === "dark" ? "bg-slate-800" : "bg-slate-50"
-                        }`}
+                        className="w-full h-20 rounded border flex items-center justify-center p-3 mb-2"
+                        style={{ backgroundColor: p.bgColor || "#F8FAFC" }}
                       >
                         <img
                           src={p.logo}
@@ -317,11 +307,11 @@ const ContactManager: React.FC = () => {
                   id="partner-form"
                   className={`p-6 rounded-lg border-2 ${
                     editingPartnerIndex !== null
-                      ? "bg-brand-red/5 border-brand-red/20"
+                      ? "bg-blue-50/30 border-blue-200"
                       : "bg-slate-50 border-dashed border-slate-200"
                   }`}
                 >
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-6">
                     <h4 className="font-bold text-slate-700 flex items-center gap-2">
                       {editingPartnerIndex !== null ? (
                         <>
@@ -333,37 +323,49 @@ const ContactManager: React.FC = () => {
                         </>
                       )}
                     </h4>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">
-                        Logo Theme:
-                      </span>
-                      <div className="flex bg-slate-200 rounded p-1">
-                        <button
-                          onClick={() =>
-                            setNewPartner({ ...newPartner, theme: "light" })
+                    <div className="flex items-center gap-4 bg-white p-2 rounded-lg border shadow-sm">
+                      <div className="flex items-center gap-2 pr-4 border-r">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          Background Color
+                        </span>
+                        <input
+                          type="color"
+                          className="w-8 h-8 rounded cursor-pointer border-0 p-0 overflow-hidden"
+                          value={newPartner.bgColor || "#F8FAFC"}
+                          onChange={(e) =>
+                            setNewPartner({
+                              ...newPartner,
+                              bgColor: e.target.value,
+                            })
                           }
-                          className={`p-1.5 rounded transition-all ${
-                            newPartner.theme === "light"
-                              ? "bg-white shadow-sm text-brand-red"
-                              : "text-slate-500"
-                          }`}
-                          title="Dark Logo on Light BG"
-                        >
-                          <Sun size={14} />
-                        </button>
-                        <button
-                          onClick={() =>
-                            setNewPartner({ ...newPartner, theme: "dark" })
+                        />
+                        <input
+                          type="text"
+                          className="w-20 p-1 text-xs border rounded font-mono"
+                          value={newPartner.bgColor || "#F8FAFC"}
+                          onChange={(e) =>
+                            setNewPartner({
+                              ...newPartner,
+                              bgColor: e.target.value,
+                            })
                           }
-                          className={`p-1.5 rounded transition-all ${
-                            newPartner.theme === "dark"
-                              ? "bg-slate-800 shadow-sm text-white"
-                              : "text-slate-500"
-                          }`}
-                          title="Light Logo on Dark BG"
-                        >
-                          <Moon size={14} />
-                        </button>
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        {presets.map((c) => (
+                          <button
+                            key={c}
+                            onClick={() =>
+                              setNewPartner({ ...newPartner, bgColor: c })
+                            }
+                            className={`w-5 h-5 rounded-full border border-slate-200 transition-transform hover:scale-125 ${
+                              newPartner.bgColor === c
+                                ? "ring-2 ring-brand-red ring-offset-1"
+                                : ""
+                            }`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -409,7 +411,11 @@ const ContactManager: React.FC = () => {
                       <button
                         onClick={() => {
                           setEditingPartnerIndex(null);
-                          setNewPartner({ name: "", logo: "", theme: "light" });
+                          setNewPartner({
+                            name: "",
+                            logo: "",
+                            bgColor: "#F8FAFC",
+                          });
                         }}
                         className="px-4 py-2 text-sm text-slate-500"
                       >
@@ -420,13 +426,33 @@ const ContactManager: React.FC = () => {
                       onClick={handleAddPartner}
                       className="px-8 py-2 bg-slate-800 text-white text-sm font-bold rounded hover:bg-slate-700 transition-colors"
                     >
-                      {editingPartnerIndex !== null ? "Update" : "Add"}
+                      {editingPartnerIndex !== null
+                        ? "Update Partner"
+                        : "Add to List"}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
           </>
+        )}
+        {activeTab === "contact" && (
+          <div className="space-y-4">
+            <textarea
+              rows={3}
+              className="w-full p-2 border rounded"
+              placeholder="Intro EN"
+              value={data.introEn}
+              onChange={(e) => updateField("introEn", e.target.value)}
+            />
+            <textarea
+              rows={3}
+              className="w-full p-2 border rounded"
+              placeholder="Intro ZH"
+              value={data.introZh}
+              onChange={(e) => updateField("introZh", e.target.value)}
+            />
+          </div>
         )}
       </div>
     </div>
