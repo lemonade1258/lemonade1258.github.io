@@ -15,7 +15,6 @@ const Tour: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log("[Home] Fetching data...");
         const [contactData, newsData] = await Promise.all([
           fetchContact(),
           fetchNews(),
@@ -116,7 +115,7 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. Research Areas (HTML Enabled) */}
+      {/* 3. Research Areas */}
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100">
         <h2 className="text-3xl font-serif font-medium text-brand-dark mb-12 text-center">
           {t("common.researchAreas")}
@@ -127,14 +126,12 @@ const Tour: React.FC = () => {
               <div className="space-y-3 animate-pulse">
                 <div className="h-4 bg-slate-200 rounded w-full"></div>
                 <div className="h-4 bg-slate-200 rounded w-5/6"></div>
-                <div className="h-4 bg-slate-200 rounded w-4/6"></div>
               </div>
             ) : (
               <div
                 className="prose prose-slate prose-sm md:prose-base max-w-none 
                         prose-p:text-slate-600 prose-p:leading-relaxed prose-p:font-light
-                        prose-strong:text-brand-dark prose-strong:font-bold
-                        prose-ul:list-disc prose-ul:pl-4 prose-li:text-slate-500"
+                        prose-strong:text-brand-dark prose-strong:font-bold"
                 dangerouslySetInnerHTML={{
                   __html: researchText || t("common.noData"),
                 }}
@@ -166,15 +163,13 @@ const Tour: React.FC = () => {
                 {t("sections.viewArchive")} &rarr;
               </Link>
             </div>
-
             <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors bg-white shadow-sm">
               <h3 className="font-bold text-brand-dark mb-2 flex items-center gap-2">
                 <span className="w-2 h-2 bg-brand-tech rounded-full"></span>
                 {t("nav.publications")}
               </h3>
               <p className="text-sm text-slate-500 mb-4">
-                Explore our latest research papers in top-tier conferences (ACL,
-                CVPR, NeurIPS).
+                Explore our latest research papers in top-tier conferences.
               </p>
               <Link
                 to="/publications"
@@ -187,37 +182,39 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Partners (Restyled for uniformity and better visibility) */}
-      <section className="py-20 bg-slate-50 border-t border-slate-100 overflow-hidden">
+      {/* 4. Partners - High End Refinement */}
+      <section className="py-24 bg-white border-t border-slate-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-serif font-medium text-brand-dark mb-12 text-center">
+          <h2 className="text-2xl font-serif font-medium text-brand-dark mb-16 text-center tracking-tight">
             {t("common.partners")}
           </h2>
 
           {!loading && partners.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-12 gap-x-8">
               {partners.map((partner, idx) => (
                 <a
                   key={idx}
                   href={partner.link || "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="group flex flex-col items-center"
+                  className="group flex flex-col items-center animate-fade-in"
+                  style={{ animationDelay: `${idx * 50}ms` }}
                 >
-                  {/* Uniform Logo Container with subtle background to support white logos */}
-                  <div className="w-full aspect-[3/2] bg-slate-100/50 rounded-lg border border-slate-200/60 p-4 flex items-center justify-center group-hover:bg-white group-hover:shadow-md group-hover:border-brand-red/20 transition-all duration-300">
+                  {/* Unified Card: aspect-ratio control + high contrast background for white logos */}
+                  <div className="w-full aspect-[3/2] bg-slate-50/80 rounded-xl border border-slate-100 p-6 flex items-center justify-center transition-all duration-500 group-hover:shadow-md group-hover:border-slate-200 group-hover:-translate-y-1">
                     <img
                       src={partner.logo}
                       alt={partner.name}
-                      className="max-w-full max-h-full object-contain filter drop-shadow-sm group-hover:scale-110 transition-transform duration-500"
+                      className="max-w-full max-h-full object-contain filter drop-shadow-sm transition-transform duration-700 group-hover:scale-110"
                     />
                   </div>
-                  {/* Normalized Caption */}
-                  <div className="mt-3 text-center px-1">
-                    <p className="text-xs font-bold text-slate-700 group-hover:text-brand-red transition-colors line-clamp-1">
+
+                  {/* Normalized Caption Area */}
+                  <div className="mt-4 text-center w-full h-12 flex flex-col justify-start">
+                    <p className="text-[11px] font-bold text-slate-700 group-hover:text-brand-red transition-colors line-clamp-1 uppercase tracking-wider px-2">
                       {getText(partner.nameZh, partner.name)}
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <p className="text-[10px] text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
                       {isZh ? partner.name : partner.nameZh || ""}
                     </p>
                   </div>
