@@ -187,34 +187,40 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Partners (No Grayscale, Improved UI) */}
-      <section className="py-16 bg-slate-50 border-t border-slate-100">
+      {/* 4. Partners (Restyled for uniformity and better visibility) */}
+      <section className="py-20 bg-slate-50 border-t border-slate-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-serif font-medium text-brand-dark mb-10 text-center">
+          <h2 className="text-2xl font-serif font-medium text-brand-dark mb-12 text-center">
             {t("common.partners")}
           </h2>
 
           {!loading && partners.length > 0 ? (
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {partners.map((partner, idx) => (
                 <a
                   key={idx}
                   href={partner.link || "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="group transition-transform duration-300 hover:-translate-y-2"
-                  title={getText(partner.nameZh, partner.name)}
+                  className="group flex flex-col items-center"
                 >
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100 group-hover:shadow-md transition-shadow flex items-center justify-center">
+                  {/* Uniform Logo Container with subtle background to support white logos */}
+                  <div className="w-full aspect-[3/2] bg-slate-100/50 rounded-lg border border-slate-200/60 p-4 flex items-center justify-center group-hover:bg-white group-hover:shadow-md group-hover:border-brand-red/20 transition-all duration-300">
                     <img
                       src={partner.logo}
                       alt={partner.name}
-                      className="h-10 md:h-14 w-auto object-contain transition-transform group-hover:scale-105"
+                      className="max-w-full max-h-full object-contain filter drop-shadow-sm group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>
-                  <p className="text-[10px] text-center mt-2 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {getText(partner.nameZh, partner.name)}
-                  </p>
+                  {/* Normalized Caption */}
+                  <div className="mt-3 text-center px-1">
+                    <p className="text-xs font-bold text-slate-700 group-hover:text-brand-red transition-colors line-clamp-1">
+                      {getText(partner.nameZh, partner.name)}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      {isZh ? partner.name : partner.nameZh || ""}
+                    </p>
+                  </div>
                 </a>
               ))}
             </div>
