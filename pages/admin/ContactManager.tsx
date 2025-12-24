@@ -15,6 +15,8 @@ import {
   Info,
   Edit2,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -51,12 +53,12 @@ const ContactManager: React.FC = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<"home" | "contact">("home");
 
-  // Partner Editing State
   const [newPartner, setNewPartner] = useState<Partner>({
     name: "",
     nameZh: "",
     logo: "",
     link: "",
+    theme: "light",
   });
   const [editingPartnerIndex, setEditingPartnerIndex] = useState<number | null>(
     null
@@ -112,13 +114,19 @@ const ContactManager: React.FC = () => {
           partners: [...(prev.partners || []), newPartner],
         }));
       }
-      setNewPartner({ name: "", nameZh: "", logo: "", link: "" });
+      setNewPartner({
+        name: "",
+        nameZh: "",
+        logo: "",
+        link: "",
+        theme: "light",
+      });
       setHasUnsavedChanges(true);
     }
   };
 
   const handleEditPartner = (idx: number) => {
-    setNewPartner(data.partners![idx]);
+    setNewPartner({ theme: "light", ...data.partners![idx] });
     setEditingPartnerIndex(idx);
     document
       .getElementById("partner-form")
@@ -149,32 +157,26 @@ const ContactManager: React.FC = () => {
   };
 
   if (loading)
-    return (
-      <div className="p-12 text-center text-slate-400 animate-pulse">
-        Loading...
-      </div>
-    );
+    return <div className="p-12 text-center text-slate-400">Loading...</div>;
 
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full overflow-y-auto relative">
       <div className="flex justify-between items-center mb-6 sticky top-0 bg-white/95 z-10 py-2 border-b">
         <h2 className="text-2xl font-bold text-slate-800">Site Settings</h2>
-        <div className="flex gap-3">
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className={`px-6 py-2 text-white rounded flex items-center transition-all ${
-              isSaving
-                ? "bg-slate-400"
-                : hasUnsavedChanges
-                ? "bg-brand-red animate-pulse"
-                : "bg-slate-700"
-            }`}
-          >
-            <Save size={18} className="mr-2" />{" "}
-            {isSaving ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`px-6 py-2 text-white rounded flex items-center shadow ${
+            isSaving
+              ? "bg-slate-400"
+              : hasUnsavedChanges
+              ? "bg-brand-red animate-pulse"
+              : "bg-slate-700"
+          }`}
+        >
+          <Save size={18} className="mr-2" />{" "}
+          {isSaving ? "Saving..." : "Save Changes"}
+        </button>
       </div>
 
       <div className="flex gap-4 mb-8 border-b">
@@ -249,33 +251,7 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
-            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-              <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText size={18} /> Research Areas
-                </div>
-              </div>
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <textarea
-                  rows={6}
-                  className="w-full p-2 border rounded font-mono text-sm bg-slate-50"
-                  value={data.researchAreasTextEn || ""}
-                  onChange={(e) =>
-                    updateField("researchAreasTextEn", e.target.value)
-                  }
-                />
-                <textarea
-                  rows={6}
-                  className="w-full p-2 border rounded font-mono text-sm bg-slate-50"
-                  value={data.researchAreasTextZh || ""}
-                  onChange={(e) =>
-                    updateField("researchAreasTextZh", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Partners Admin - Styled to match Frontend refinement */}
+            {/* Partners Admin */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Users size={18} /> Collaborating Institutions
@@ -285,38 +261,26 @@ const ContactManager: React.FC = () => {
                   {(data.partners || []).map((p, idx) => (
                     <div
                       key={idx}
-                      className={`group border rounded-lg p-3 bg-white relative transition-all ${
+                      className={`group border rounded-lg p-3 relative transition-all ${
                         editingPartnerIndex === idx
                           ? "ring-2 ring-brand-red"
-                          : "hover:bg-slate-50"
+                          : "bg-white"
                       }`}
                     >
-                      <div className="absolute right-1 top-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100">
-                        <button
-                          onClick={() => movePartner(idx, "up")}
-                          className="p-1 bg-white border rounded text-slate-400 hover:text-slate-700"
-                        >
-                          <ArrowUp size={10} />
-                        </button>
-                        <button
-                          onClick={() => movePartner(idx, "down")}
-                          className="p-1 bg-white border rounded text-slate-400 hover:text-slate-700"
-                        >
-                          <ArrowDown size={10} />
-                        </button>
+                      <div
+                        className={`w-full h-20 rounded border flex items-center justify-center p-3 mb-2 ${
+                          p.theme === "dark" ? "bg-slate-800" : "bg-slate-50"
+                        }`}
+                      >
+                        <img
+                          src={p.logo}
+                          alt={p.name}
+                          className="max-h-full max-w-full object-contain"
+                        />
                       </div>
-                      <div className="flex flex-col items-center">
-                        <div className="w-full aspect-[3/2] bg-slate-50 rounded border flex items-center justify-center p-3 mb-2">
-                          <img
-                            src={p.logo}
-                            alt={p.name}
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        </div>
-                        <p className="text-[10px] font-bold text-slate-800 truncate w-full text-center">
-                          {p.name}
-                        </p>
-                      </div>
+                      <p className="text-[10px] font-bold text-slate-800 truncate text-center">
+                        {p.name}
+                      </p>
                       <div className="mt-3 pt-2 border-t flex justify-center gap-3">
                         <button
                           onClick={() => handleEditPartner(idx)}
@@ -331,6 +295,20 @@ const ContactManager: React.FC = () => {
                           Delete
                         </button>
                       </div>
+                      <div className="absolute right-1 top-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100">
+                        <button
+                          onClick={() => movePartner(idx, "up")}
+                          className="p-1 bg-white border rounded text-slate-400"
+                        >
+                          <ArrowUp size={10} />
+                        </button>
+                        <button
+                          onClick={() => movePartner(idx, "down")}
+                          className="p-1 bg-white border rounded text-slate-400"
+                        >
+                          <ArrowDown size={10} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -343,17 +321,53 @@ const ContactManager: React.FC = () => {
                       : "bg-slate-50 border-dashed border-slate-200"
                   }`}
                 >
-                  <h4 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    {editingPartnerIndex !== null ? (
-                      <>
-                        <Edit2 size={16} /> Edit Partner
-                      </>
-                    ) : (
-                      <>
-                        <Plus size={16} /> Add New Partner
-                      </>
-                    )}
-                  </h4>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-bold text-slate-700 flex items-center gap-2">
+                      {editingPartnerIndex !== null ? (
+                        <>
+                          <Edit2 size={16} /> Edit Institution
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} /> Add Institution
+                        </>
+                      )}
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">
+                        Logo Theme:
+                      </span>
+                      <div className="flex bg-slate-200 rounded p-1">
+                        <button
+                          onClick={() =>
+                            setNewPartner({ ...newPartner, theme: "light" })
+                          }
+                          className={`p-1.5 rounded transition-all ${
+                            newPartner.theme === "light"
+                              ? "bg-white shadow-sm text-brand-red"
+                              : "text-slate-500"
+                          }`}
+                          title="Dark Logo on Light BG"
+                        >
+                          <Sun size={14} />
+                        </button>
+                        <button
+                          onClick={() =>
+                            setNewPartner({ ...newPartner, theme: "dark" })
+                          }
+                          className={`p-1.5 rounded transition-all ${
+                            newPartner.theme === "dark"
+                              ? "bg-slate-800 shadow-sm text-white"
+                              : "text-slate-500"
+                          }`}
+                          title="Light Logo on Dark BG"
+                        >
+                          <Moon size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <input
                       className="w-full p-2 border rounded text-sm"
@@ -395,7 +409,7 @@ const ContactManager: React.FC = () => {
                       <button
                         onClick={() => {
                           setEditingPartnerIndex(null);
-                          setNewPartner({ name: "", logo: "" });
+                          setNewPartner({ name: "", logo: "", theme: "light" });
                         }}
                         className="px-4 py-2 text-sm text-slate-500"
                       >
@@ -404,49 +418,15 @@ const ContactManager: React.FC = () => {
                     )}
                     <button
                       onClick={handleAddPartner}
-                      className="px-6 py-2 bg-slate-800 text-white text-sm font-bold rounded"
+                      className="px-8 py-2 bg-slate-800 text-white text-sm font-bold rounded hover:bg-slate-700 transition-colors"
                     >
-                      {editingPartnerIndex !== null
-                        ? "Update Partner"
-                        : "Add to List"}
+                      {editingPartnerIndex !== null ? "Update" : "Add"}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
           </>
-        )}
-        {activeTab === "contact" && (
-          <div className="space-y-4">
-            <textarea
-              rows={3}
-              className="w-full p-2 border rounded"
-              placeholder="Intro EN"
-              value={data.introEn}
-              onChange={(e) => updateField("introEn", e.target.value)}
-            />
-            <textarea
-              rows={3}
-              className="w-full p-2 border rounded"
-              placeholder="Intro ZH"
-              value={data.introZh}
-              onChange={(e) => updateField("introZh", e.target.value)}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                className="w-full p-2 border rounded"
-                placeholder="Email General"
-                value={data.emailGeneral}
-                onChange={(e) => updateField("emailGeneral", e.target.value)}
-              />
-              <input
-                className="w-full p-2 border rounded"
-                placeholder="Email Admissions"
-                value={data.emailAdmissions}
-                onChange={(e) => updateField("emailAdmissions", e.target.value)}
-              />
-            </div>
-          </div>
         )}
       </div>
     </div>

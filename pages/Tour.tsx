@@ -30,7 +30,6 @@ const Tour: React.FC = () => {
     loadData();
   }, []);
 
-  // Carousel
   useEffect(() => {
     if (contactInfo?.heroImages && contactInfo.heroImages.length > 1) {
       const interval = setInterval(() => {
@@ -43,7 +42,6 @@ const Tour: React.FC = () => {
   }, [contactInfo]);
 
   const isZh = language === "zh";
-
   const getText = (zh?: string, en?: string, defaultText: string = "") => {
     if (isZh) return zh || en || defaultText;
     return en || zh || defaultText;
@@ -62,14 +60,11 @@ const Tour: React.FC = () => {
     contactInfo?.welcomeTextEn,
     ""
   );
-
   const researchText = getText(
     contactInfo?.researchAreasTextZh,
     contactInfo?.researchAreasTextEn,
     ""
   );
-
-  const heroImages = contactInfo?.heroImages || [];
   const partners = contactInfo?.partners || [];
 
   return (
@@ -93,8 +88,8 @@ const Tour: React.FC = () => {
       {/* 2. Carousel */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
         <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-100 rounded-lg overflow-hidden shadow-sm border border-slate-100">
-          {!loading && heroImages.length > 0
-            ? heroImages.map((img, idx) => (
+          {!loading && contactInfo?.heroImages?.length
+            ? contactInfo.heroImages.map((img, idx) => (
                 <img
                   key={idx}
                   src={img}
@@ -120,31 +115,22 @@ const Tour: React.FC = () => {
         <h2 className="text-3xl font-serif font-medium text-brand-dark mb-12 text-center">
           {t("common.researchAreas")}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-slate-600 leading-relaxed font-light text-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="bg-slate-50 p-8 rounded-lg border border-slate-100">
-            {loading ? (
-              <div className="space-y-3 animate-pulse">
-                <div className="h-4 bg-slate-200 rounded w-full"></div>
-                <div className="h-4 bg-slate-200 rounded w-5/6"></div>
-              </div>
-            ) : (
-              <div
-                className="prose prose-slate prose-sm md:prose-base max-w-none 
-                        prose-p:text-slate-600 prose-p:leading-relaxed prose-p:font-light
-                        prose-strong:text-brand-dark prose-strong:font-bold"
-                dangerouslySetInnerHTML={{
-                  __html: researchText || t("common.noData"),
-                }}
-              />
-            )}
+            <div
+              className="prose prose-slate prose-sm md:prose-base max-w-none prose-p:text-slate-600 prose-p:font-light"
+              dangerouslySetInnerHTML={{
+                __html: researchText || t("common.noData"),
+              }}
+            />
           </div>
           <div className="flex flex-col justify-center space-y-6">
-            <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors group bg-white shadow-sm">
+            <div className="p-6 border border-slate-100 rounded-lg group bg-white shadow-sm">
               <h3 className="font-bold text-brand-dark mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-brand-red rounded-full"></span>
                 {t("nav.news")}
               </h3>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {newsItems.map((item) => (
                   <li key={item.id}>
                     <Link
@@ -156,21 +142,12 @@ const Tour: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/news"
-                className="inline-block mt-4 text-xs font-bold uppercase tracking-wider text-brand-tech hover:underline"
-              >
-                {t("sections.viewArchive")} &rarr;
-              </Link>
             </div>
-            <div className="p-6 border border-slate-100 rounded-lg hover:border-brand-red/30 transition-colors bg-white shadow-sm">
+            <div className="p-6 border border-slate-100 rounded-lg bg-white shadow-sm">
               <h3 className="font-bold text-brand-dark mb-2 flex items-center gap-2">
                 <span className="w-2 h-2 bg-brand-tech rounded-full"></span>
                 {t("nav.publications")}
               </h3>
-              <p className="text-sm text-slate-500 mb-4">
-                Explore our latest research papers in top-tier conferences.
-              </p>
               <Link
                 to="/publications"
                 className="inline-block text-xs font-bold uppercase tracking-wider text-brand-tech hover:underline"
@@ -182,15 +159,15 @@ const Tour: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Partners - High End Refinement */}
-      <section className="py-24 bg-white border-t border-slate-100 overflow-hidden">
+      {/* 4. Partners - Uniform Height & Contrast Backgrounds */}
+      <section className="py-24 bg-white border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-serif font-medium text-brand-dark mb-16 text-center tracking-tight">
+          <h2 className="text-2xl font-serif font-medium text-brand-dark mb-16 text-center">
             {t("common.partners")}
           </h2>
 
           {!loading && partners.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-12 gap-x-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-10">
               {partners.map((partner, idx) => (
                 <a
                   key={idx}
@@ -198,24 +175,29 @@ const Tour: React.FC = () => {
                   target="_blank"
                   rel="noreferrer"
                   className="group flex flex-col items-center animate-fade-in"
-                  style={{ animationDelay: `${idx * 50}ms` }}
                 >
-                  {/* Unified Card: aspect-ratio control + high contrast background for white logos */}
-                  <div className="w-full aspect-[3/2] bg-slate-50/80 rounded-xl border border-slate-100 p-6 flex items-center justify-center transition-all duration-500 group-hover:shadow-md group-hover:border-slate-200 group-hover:-translate-y-1">
+                  {/* 
+                                  Uniform Height Container: 
+                                  - Fixed h-28 (7rem)
+                                  - theme check for contrast
+                              */}
+                  <div
+                    className={`w-full h-28 rounded-xl border p-6 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 ${
+                      partner.theme === "dark"
+                        ? "bg-slate-800 border-slate-700 shadow-inner"
+                        : "bg-slate-50 border-slate-100 shadow-sm"
+                    }`}
+                  >
                     <img
                       src={partner.logo}
                       alt={partner.name}
-                      className="max-w-full max-h-full object-contain filter drop-shadow-sm transition-transform duration-700 group-hover:scale-110"
+                      className="max-h-full max-w-full object-contain filter drop-shadow-sm transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
 
-                  {/* Normalized Caption Area */}
-                  <div className="mt-4 text-center w-full h-12 flex flex-col justify-start">
-                    <p className="text-[11px] font-bold text-slate-700 group-hover:text-brand-red transition-colors line-clamp-1 uppercase tracking-wider px-2">
+                  <div className="mt-4 text-center px-1">
+                    <p className="text-[10px] font-bold text-slate-700 group-hover:text-brand-red transition-colors uppercase tracking-widest line-clamp-1">
                       {getText(partner.nameZh, partner.name)}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
-                      {isZh ? partner.name : partner.nameZh || ""}
                     </p>
                   </div>
                 </a>
