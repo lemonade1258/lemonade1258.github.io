@@ -12,7 +12,7 @@ import {
   ArrowDown,
   Edit2,
   X,
-  Pipette,
+  Microscope,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -197,6 +197,7 @@ const ContactManager: React.FC = () => {
       <div className="space-y-8 pb-10">
         {activeTab === "home" && (
           <>
+            {/* 1. Welcome Section */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white mb-8">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Home size={18} /> Welcome Message
@@ -225,7 +226,7 @@ const ContactManager: React.FC = () => {
                     rows={3}
                     className="w-full p-2 border rounded"
                     value={data.welcomeTextEn || ""}
-                    placeholder="Text EN"
+                    placeholder="Welcome Text EN"
                     onChange={(e) =>
                       updateField("welcomeTextEn", e.target.value)
                     }
@@ -234,7 +235,7 @@ const ContactManager: React.FC = () => {
                     rows={3}
                     className="w-full p-2 border rounded"
                     value={data.welcomeTextZh || ""}
-                    placeholder="Text ZH"
+                    placeholder="Welcome Text ZH"
                     onChange={(e) =>
                       updateField("welcomeTextZh", e.target.value)
                     }
@@ -243,6 +244,55 @@ const ContactManager: React.FC = () => {
               </div>
             </div>
 
+            {/* 2. Research Areas (HTML Editor) */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white mb-8 shadow-sm">
+              <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Microscope size={18} /> Research Areas (Left Panel)
+                </div>
+                <span className="text-[10px] font-normal text-slate-400 bg-white px-2 py-0.5 border rounded uppercase tracking-wider">
+                  HTML Supported
+                </span>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                      Research Areas (English)
+                    </label>
+                    <textarea
+                      rows={10}
+                      className="w-full p-3 border rounded font-mono text-sm bg-slate-50 focus:ring-1 focus:ring-brand-red"
+                      value={data.researchAreasTextEn || ""}
+                      placeholder="<p>Focusing on...</p><ul><li>AI Reasoning</li></ul>"
+                      onChange={(e) =>
+                        updateField("researchAreasTextEn", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                      研究领域 (中文)
+                    </label>
+                    <textarea
+                      rows={10}
+                      className="w-full p-3 border rounded font-mono text-sm bg-slate-50 focus:ring-1 focus:ring-brand-red"
+                      value={data.researchAreasTextZh || ""}
+                      placeholder="<p>致力于...</p><ul><li>人工智能推理</li></ul>"
+                      onChange={(e) =>
+                        updateField("researchAreasTextZh", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 italic">
+                  * Use HTML tags for formatting: &lt;p&gt; for paragraphs,
+                  &lt;b&gt; for bold, &lt;ul&gt;&lt;li&gt; for lists.
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Collaborating Institutions */}
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
               <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
                 <Users size={18} /> Collaborating Institutions
@@ -326,7 +376,7 @@ const ContactManager: React.FC = () => {
                     <div className="flex items-center gap-4 bg-white p-2 rounded-lg border shadow-sm">
                       <div className="flex items-center gap-2 pr-4 border-r">
                         <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          Background Color
+                          Logo Background
                         </span>
                         <input
                           type="color"
@@ -437,21 +487,52 @@ const ContactManager: React.FC = () => {
           </>
         )}
         {activeTab === "contact" && (
-          <div className="space-y-4">
-            <textarea
-              rows={3}
-              className="w-full p-2 border rounded"
-              placeholder="Intro EN"
-              value={data.introEn}
-              onChange={(e) => updateField("introEn", e.target.value)}
-            />
-            <textarea
-              rows={3}
-              className="w-full p-2 border rounded"
-              placeholder="Intro ZH"
-              value={data.introZh}
-              onChange={(e) => updateField("introZh", e.target.value)}
-            />
+          <div className="space-y-6">
+            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white mb-8">
+              <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700 flex items-center gap-2">
+                <FileText size={18} /> Contact Page Intro
+              </div>
+              <div className="p-6 space-y-4">
+                <textarea
+                  rows={3}
+                  className="w-full p-2 border rounded"
+                  placeholder="Intro EN"
+                  value={data.introEn}
+                  onChange={(e) => updateField("introEn", e.target.value)}
+                />
+                <textarea
+                  rows={3}
+                  className="w-full p-2 border rounded"
+                  placeholder="Intro ZH"
+                  value={data.introZh}
+                  onChange={(e) => updateField("introZh", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white mb-8">
+              <div className="bg-slate-50 px-6 py-3 border-b font-bold text-slate-700">
+                Address & Info
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <textarea
+                    rows={3}
+                    className="w-full p-2 border rounded font-mono text-sm"
+                    placeholder="Address EN"
+                    value={data.addressEn}
+                    onChange={(e) => updateField("addressEn", e.target.value)}
+                  />
+                  <textarea
+                    rows={3}
+                    className="w-full p-2 border rounded font-mono text-sm"
+                    placeholder="Address ZH"
+                    value={data.addressZh}
+                    onChange={(e) => updateField("addressZh", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
