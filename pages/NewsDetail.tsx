@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { fetchNewsItem } from "../lib/dataStore";
+import { fetchNewsItem, trackNewsView } from "../lib/dataStore";
 import { NewsItem } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
-import { ArrowLeft, Calendar, User, X } from "lucide-react";
+import { ArrowLeft, Calendar, User, X, Eye } from "lucide-react";
 
 const NewsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +14,7 @@ const NewsDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
-  // Fetch Data
+  // Fetch Data and Track View
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -23,8 +23,10 @@ const NewsDetail: React.FC = () => {
         const item = await fetchNewsItem(id);
         if (item) {
           setArticle(item);
-        } else {
-          // navigate('/news'); // Optional: redirect on 404
+          // 异步增加浏览量
+          trackNewsView(id).catch((err) =>
+            console.warn("View tracking failed", err)
+          );
         }
       } catch (err) {
         console.error("Failed to fetch news detail", err);
@@ -34,7 +36,7 @@ const NewsDetail: React.FC = () => {
     };
 
     fetchData();
-  }, [id, navigate]);
+  }, [id]);
 
   // SEO Title Update
   useEffect(() => {
@@ -47,7 +49,6 @@ const NewsDetail: React.FC = () => {
     }
   }, [article, language]);
 
-  // Handle Image Clicks for Lightbox
   const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     if (target.tagName === "IMG") {
@@ -76,10 +77,7 @@ const NewsDetail: React.FC = () => {
       <div className="pt-32 text-center text-slate-500">Article not found.</div>
     );
 
-  // Bilingual Logic
   const isZh = language === "zh";
-
-  // Prefer current language, fallback to the other
   const displayTitle = isZh
     ? article.titleZh || article.title
     : article.title || article.titleZh;
@@ -94,7 +92,6 @@ const NewsDetail: React.FC = () => {
   return (
     <div className="bg-white min-h-screen pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
         <nav className="flex items-center text-sm text-slate-500 mb-8">
           <Link to="/" className="hover:text-brand-red">
             Home
@@ -109,7 +106,6 @@ const NewsDetail: React.FC = () => {
           </span>
         </nav>
 
-        {/* Header */}
         <header className="mb-10">
           <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-brand-red mb-4">
             <span>{article.category}</span>
@@ -118,6 +114,15 @@ const NewsDetail: React.FC = () => {
               <Calendar size={12} className="mr-1" />
               {article.date}
             </div>
+            {article.views !== undefined && (
+              <>
+                <div className="w-px h-3 bg-slate-300"></div>
+                <div className="flex items-center text-slate-400">
+                  <Eye size={12} className="mr-1" />
+                  {article.views} views
+                </div>
+              </>
+            )}
           </div>
 
           <h1 className="text-3xl md:text-5xl font-serif font-bold text-brand-dark mb-4 leading-tight">
@@ -145,7 +150,6 @@ const NewsDetail: React.FC = () => {
           </div>
         </header>
 
-        {/* Cover Image */}
         {article.coverImage && (
           <div className="mb-12 rounded-lg overflow-hidden shadow-sm">
             <img
@@ -156,7 +160,6 @@ const NewsDetail: React.FC = () => {
           </div>
         )}
 
-        {/* Rich Content Render */}
         <div
           className="prose prose-lg prose-slate max-w-none 
             prose-headings:font-serif prose-headings:font-medium prose-headings:text-brand-dark
@@ -177,7 +180,6 @@ const NewsDetail: React.FC = () => {
           </div>
         )}
 
-        {/* Footer Navigation */}
         <div className="mt-16 pt-10 border-t border-slate-200 flex justify-between">
           <button
             onClick={() => navigate("/news")}
@@ -188,7 +190,6 @@ const NewsDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Lightbox Overlay */}
       {lightboxSrc && (
         <div
           className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"

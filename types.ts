@@ -69,6 +69,11 @@ export interface Person {
   advisor?: string;
 }
 
+export interface NewsVisitorLog {
+  ip: string;
+  timestamp: string;
+}
+
 export interface NewsItem {
   id: string;
   date: string;
@@ -84,6 +89,9 @@ export interface NewsItem {
   coverImage?: string;
   author?: string;
   isPublished?: boolean;
+  isPinned?: boolean;
+  views?: number;
+  visitorLogs?: NewsVisitorLog[];
 }
 
 export interface Partner {

@@ -2,7 +2,7 @@ import { NewsItem, Person, Publication, ContactInfo, Project } from "../types";
 
 const API_BASE_URL = "http://59.110.163.47:5000/api";
 const CACHE_PREFIX = "clair_cache_v5_";
-const CACHE_TTL = 30 * 1000; // 缓存缩短至 30 秒
+const CACHE_TTL = 30 * 1000;
 
 const getCache = (key: string) => {
   try {
@@ -53,7 +53,6 @@ async function apiCall<T>(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  // Add cache-busting timestamp for GET requests
   const url = isRead
     ? `${API_BASE_URL}${endpoint}${
         endpoint.includes("?") ? "&" : "?"
@@ -106,6 +105,8 @@ export const uploadFile = async (file: File): Promise<string> => {
 
 export const fetchNews = () => apiCall<NewsItem[]>("/news");
 export const fetchNewsItem = (id: string) => apiCall<NewsItem>(`/news/${id}`);
+export const trackNewsView = (id: string) =>
+  apiCall<{ views: number }>(`/news/${id}/view`, "POST");
 export const createNews = (data: NewsItem) =>
   apiCall<NewsItem>("/news", "POST", data);
 export const updateNews = (data: NewsItem) =>
