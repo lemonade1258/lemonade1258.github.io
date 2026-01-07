@@ -50,7 +50,7 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
     : person.teacherProfile?.influence;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mb-8">
+    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mb-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row items-start">
         <div className="w-full md:w-64 md:flex-shrink-0 bg-slate-50 relative group border-b md:border-b-0 md:border-r border-slate-100">
           <div className="aspect-[3/4] w-full">
@@ -209,7 +209,6 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
   );
 };
 
-// Compact Grid Card for students/staff - 2 per row
 const CompactPersonCard: React.FC<{ person: Person }> = ({ person }) => {
   const { language } = useLanguage();
   const isZh = language === "zh";
@@ -225,7 +224,7 @@ const CompactPersonCard: React.FC<{ person: Person }> = ({ person }) => {
   return (
     <Wrapper
       {...props}
-      className={`block bg-white border border-slate-100 rounded-lg p-5 transition-all duration-300 group hover:shadow-lg hover:border-brand-red/20 ${
+      className={`block bg-white border border-slate-100 rounded-lg p-5 transition-all duration-300 group hover:shadow-lg hover:border-brand-red/20 animate-fade-in-up ${
         person.homepage ? "cursor-pointer" : "cursor-default"
       }`}
     >
@@ -303,142 +302,116 @@ const People: React.FC = () => {
 
   const faculty = getByCategory("Teachers");
   const visiting = getByCategory("Visiting Scholars");
-  const staff = getByCategories(["Secretary", "RA"]);
   const phd = getByCategory("PhD");
-  const masterProf = getByCategory("Professional Master");
   const masterAcad = getByCategory("Academic Master");
-  const master = getByCategory("Master"); // fallback
-  const interns = getByCategory("Intern");
+  const masterProf = getByCategory("Professional Master");
+  const masterGeneral = getByCategory("Master");
+  const ra = getByCategory("RA");
+  const internAndSecretary = getByCategories(["Intern", "Secretary"]);
+
+  const Section: React.FC<{
+    title: string;
+    children: React.ReactNode;
+    count: number;
+  }> = ({ title, children, count }) => {
+    if (count === 0) return null;
+    return (
+      <section className="mb-20">
+        <div className="flex items-center gap-4 mb-8 border-b border-slate-100 pb-4">
+          <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
+          <span className="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
+            {count}
+          </span>
+        </div>
+        {children}
+      </section>
+    );
+  };
+
+  const CompactGrid: React.FC<{ items: Person[] }> = ({ items }) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {items.map((p) => (
+        <CompactPersonCard key={p.id} person={p} />
+      ))}
+    </div>
+  );
 
   return (
     <div className="bg-white min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="mb-12 pt-10">
+        <header className="mb-16 pt-10">
           <h1 className="text-4xl md:text-5xl font-serif text-brand-dark mb-4">
             {t("nav.people")}
           </h1>
           <p className="text-lg text-slate-500 font-light max-w-2xl">
-            Meet the faculty, students, and staff of CLAIN.
+            Meet the faculty, researchers, students, and staff of the Center for
+            Language and Information Research.
           </p>
         </header>
 
-        {/* 1. Faculty - Detailed View */}
-        {faculty.length > 0 && (
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold text-slate-800 mb-8 border-b pb-4">
-              {t("people.categories.Teachers")}
-            </h2>
-            <div className="space-y-8">
-              {faculty.map((p) => (
-                <TeacherCard key={p.id} person={p} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Teachers */}
+        <Section title={t("people.categories.Teachers")} count={faculty.length}>
+          <div className="space-y-8">
+            {faculty.map((p) => (
+              <TeacherCard key={p.id} person={p} />
+            ))}
+          </div>
+        </Section>
 
-        {/* 2. Staff & Visiting - Grid 2 Col */}
-        {(staff.length > 0 || visiting.length > 0) && (
-          <section className="mb-16">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {visiting.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-bold text-slate-700 mb-6">
-                    {t("people.categories.Visiting Scholars")}
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {visiting.map((p) => (
-                      <CompactPersonCard key={p.id} person={p} />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {staff.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-bold text-slate-700 mb-6">
-                    Staff & RA
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {staff.map((p) => (
-                      <CompactPersonCard key={p.id} person={p} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
+        {/* Visiting Scholars */}
+        <Section
+          title={t("people.categories.Visiting Scholars")}
+          count={visiting.length}
+        >
+          <CompactGrid items={visiting} />
+        </Section>
 
-        {/* 3. PhD - Grid 2 Col */}
-        {phd.length > 0 && (
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold text-slate-800 mb-8 border-b pb-4">
-              {t("people.categories.PhD")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-              {phd.map((p) => (
-                <CompactPersonCard key={p.id} person={p} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* PhD Students */}
+        <Section title={t("people.categories.PhD")} count={phd.length}>
+          <CompactGrid items={phd} />
+        </Section>
 
-        {/* 4. Masters - Split if data exists, else grouped */}
-        {(masterProf.length > 0 ||
-          masterAcad.length > 0 ||
-          master.length > 0) && (
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold text-slate-800 mb-8 border-b pb-4">
-              {t("people.categories.Master")}
-            </h2>
+        {/* Academic Masters */}
+        <Section
+          title={t("people.categories.Academic Master")}
+          count={masterAcad.length}
+        >
+          <CompactGrid items={masterAcad} />
+        </Section>
 
-            {masterAcad.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-lg font-bold text-slate-500 mb-4">
-                  {t("people.categories.Academic Master")}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                  {masterAcad.map((p) => (
-                    <CompactPersonCard key={p.id} person={p} />
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* Professional Masters */}
+        <Section
+          title={t("people.categories.Professional Master")}
+          count={masterProf.length}
+        >
+          <CompactGrid items={masterProf} />
+        </Section>
 
-            {masterProf.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-lg font-bold text-slate-500 mb-4">
-                  {t("people.categories.Professional Master")}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                  {masterProf.map((p) => (
-                    <CompactPersonCard key={p.id} person={p} />
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* General Masters */}
+        <Section
+          title={t("people.categories.Master")}
+          count={masterGeneral.length}
+        >
+          <CompactGrid items={masterGeneral} />
+        </Section>
 
-            {master.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                {master.map((p) => (
-                  <CompactPersonCard key={p.id} person={p} />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
+        {/* Research Assistants */}
+        <Section title={t("people.categories.RA")} count={ra.length}>
+          <CompactGrid items={ra} />
+        </Section>
 
-        {/* 5. Interns */}
-        {interns.length > 0 && (
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold text-slate-800 mb-8 border-b pb-4">
-              {t("people.categories.Intern")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-              {interns.map((p) => (
-                <CompactPersonCard key={p.id} person={p} />
-              ))}
-            </div>
-          </section>
+        {/* Administrative & Interns */}
+        <Section
+          title={t("people.categories.InternAndSecretary")}
+          count={internAndSecretary.length}
+        >
+          <CompactGrid items={internAndSecretary} />
+        </Section>
+
+        {people.length === 0 && !loading && (
+          <div className="py-20 text-center text-slate-300 italic">
+            {t("common.noData")}
+          </div>
         )}
       </div>
     </div>

@@ -66,6 +66,7 @@ export const translations = {
         RA: "Research Assistants",
         Intern: "Interns",
         Secretary: "Administrative Staff",
+        InternAndSecretary: "Administrative & Interns",
       },
       profile: {
         research: "Research Areas",
@@ -192,7 +193,8 @@ export const translations = {
         "Academic Master": "学术硕士",
         RA: "研究助理",
         Intern: "研究实习生",
-        Secretary: "科研秘书",
+        Secretary: "行政秘书",
+        InternAndSecretary: "研究实习生与行政秘书",
       },
       profile: {
         research: "研究方向",
