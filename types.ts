@@ -2,10 +2,12 @@ export interface Publication {
   id: string;
   title: string;
   authors: string[];
-  conference: string;
+  venue: string; // 发表会议/期刊
   year: number;
-  tags?: string[];
+  type: "Conference" | "Journal" | "Preprint" | "Other"; // 文献类型
   link?: string;
+  tags?: string[];
+  order?: number;
   pdf?: string;
 }
 
@@ -38,6 +40,7 @@ export type PersonCategory =
 export interface TeacherProfile {
   position: string;
   positionZh?: string;
+  // Fix: changed from [string] to string[] to resolve type errors where empty arrays or string arrays were being assigned.
   researchAreas: string[];
   researchAreasZh?: string[];
   achievements: string[];

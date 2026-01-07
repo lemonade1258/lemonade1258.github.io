@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { fetchPublications } from "../lib/dataStore";
 import { Publication } from "../types";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  BookOpen,
+  GraduationCap,
+  FileText,
+  Layout,
+} from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 
 const Publications: React.FC = () => {
   const { t } = useLanguage();
   const [publications, setPublications] = useState<Publication[]>([]);
-  const [filter, setFilter] = useState<string>("All");
+  const [filterYear, setFilterYear] = useState<string>("All");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,12 +38,41 @@ const Publications: React.FC = () => {
   ];
 
   const filteredPubs =
-    filter === "All"
+    filterYear === "All"
       ? publications
-      : publications.filter((p) => p.year.toString() === filter);
+      : publications.filter((p) => p.year.toString() === filterYear);
 
-  // Group by year for display if 'All' is selected (Assuming backend already sorts, but client sort is safe)
-  const displayedPubs = filteredPubs.sort((a, b) => b.year - a.year);
+  // Group by year
+  const groupedPubs: { [key: number]: Publication[] } = {};
+  filteredPubs.forEach((pub) => {
+    if (!groupedPubs[pub.year]) groupedPubs[pub.year] = [];
+    groupedPubs[pub.year].push(pub);
+  });
+
+  const sortedYears = Object.keys(groupedPubs)
+    .map(Number)
+    .sort((a, b) => b - a);
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "Journal":
+        return <BookOpen size={14} className="text-blue-500" />;
+      case "Conference":
+        return <GraduationCap size={14} className="text-brand-red" />;
+      case "Preprint":
+        return <FileText size={14} className="text-slate-400" />;
+      default:
+        return <Layout size={14} className="text-slate-400" />;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    return type === "Journal"
+      ? "期刊 (Journal)"
+      : type === "Conference"
+      ? "会议 (Conference)"
+      : type;
+  };
 
   if (loading) {
     return (
@@ -51,24 +86,24 @@ const Publications: React.FC = () => {
     <div className="bg-white min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <header className="mb-20 pt-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div>
+          <div className="animate-fade-in">
             <h1 className="text-5xl md:text-6xl font-serif text-brand-dark mb-6">
               {t("publications.title")}
             </h1>
-            <p className="text-xl text-slate-500 font-light max-w-2xl">
+            <p className="text-xl text-slate-500 font-light max-w-2xl leading-relaxed">
               {t("publications.subtitle")}
             </p>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 animate-fade-in stagger-1">
             <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
               {t("publications.filterYear")}
             </span>
             <div className="relative">
               <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="appearance-none bg-transparent border-b border-brand-red py-2 pl-2 pr-8 text-brand-dark font-mono text-sm focus:outline-none cursor-pointer hover:bg-slate-50"
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+                className="appearance-none bg-transparent border-b border-brand-red py-2 pl-2 pr-8 text-brand-dark font-mono text-sm focus:outline-none cursor-pointer hover:bg-slate-50 transition-colors"
               >
                 {years.map((year) => (
                   <option key={year} value={year}>
@@ -76,88 +111,116 @@ const Publications: React.FC = () => {
                   </option>
                 ))}
               </select>
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-brand-red">
+                <ArrowUpRight size={14} className="rotate-90" />
+              </div>
             </div>
           </div>
         </header>
 
-        <div className="space-y-4 max-w-6xl">
-          {displayedPubs.map((pub, index) => (
-            <div
-              key={pub.id}
-              className="group relative border-t border-slate-200 py-8 hover:bg-slate-50 transition-colors duration-300 animate-fade-in-up"
-              style={{ animationDelay: `${index * 50}ms` }}
+        <div className="space-y-24">
+          {sortedYears.map((year, yIdx) => (
+            <section
+              key={year}
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${yIdx * 100}ms` }}
             >
-              <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-baseline">
-                <div className="md:w-32 flex-shrink-0">
-                  <span className="font-mono text-sm text-brand-red">
-                    {pub.year}
-                  </span>
-                </div>
-
-                <div className="flex-grow">
-                  {pub.link ? (
-                    <a
-                      href={pub.link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block text-xl md:text-2xl font-serif text-brand-dark mb-2 leading-tight hover:text-brand-red transition-colors"
-                    >
-                      {pub.title}
-                    </a>
-                  ) : (
-                    <h3 className="text-xl md:text-2xl font-serif text-brand-dark mb-2 leading-tight">
-                      {pub.title}
-                    </h3>
-                  )}
-
-                  <div className="text-slate-600 font-light mb-3">
-                    {pub.authors.map((author, i) => (
-                      <span
-                        key={i}
-                        className={
-                          author.includes("Zhang")
-                            ? "font-medium text-brand-dark underline decoration-brand-red/30"
-                            : ""
-                        }
-                      >
-                        {author}
-                        {i < pub.authors.length - 1 ? ", " : ""}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4 text-xs tracking-wider uppercase">
-                    <span className="font-bold text-brand-dark">
-                      {pub.conference}
-                    </span>
-                    {pub.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-slate-400 px-2 py-1 border border-slate-200 rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex-shrink-0 flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {pub.link && (
-                    <a
-                      href={pub.link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 text-slate-400 hover:text-brand-tech transition-colors"
-                      title="View Project"
-                    >
-                      <ArrowUpRight size={20} />
-                    </a>
-                  )}
-                </div>
+              <div className="flex items-center gap-6 mb-12">
+                <h2 className="text-4xl font-serif font-bold text-brand-red/10 select-none">
+                  {year}
+                </h2>
+                <div className="h-[1px] flex-grow bg-slate-100"></div>
               </div>
-            </div>
+
+              <div className="grid grid-cols-1 gap-12">
+                {groupedPubs[year].map((pub, index) => (
+                  <div
+                    key={pub.id}
+                    className="group flex flex-col md:flex-row gap-6 md:gap-12 relative"
+                  >
+                    {/* Metadata Column */}
+                    <div className="md:w-32 flex-shrink-0 pt-1">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 px-2 py-1 rounded bg-slate-50 border border-slate-100 w-fit">
+                          {getTypeIcon(pub.type)}
+                          <span className="text-[10px] font-bold uppercase tracking-tight text-slate-600">
+                            {pub.type}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Content Column */}
+                    <div className="flex-grow">
+                      {pub.link ? (
+                        <a
+                          href={pub.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block text-xl md:text-2xl font-serif text-brand-dark mb-4 leading-snug hover:text-brand-red transition-colors decoration-brand-red/20 underline-offset-8 group-hover:underline"
+                        >
+                          {pub.title}
+                        </a>
+                      ) : (
+                        <h3 className="text-xl md:text-2xl font-serif text-brand-dark mb-4 leading-snug">
+                          {pub.title}
+                        </h3>
+                      )}
+
+                      <div className="text-slate-500 font-light mb-4 text-lg">
+                        {pub.authors.map((author, i) => (
+                          <span
+                            key={i}
+                            className={
+                              author.toLowerCase().includes("zhang")
+                                ? "font-medium text-brand-dark underline decoration-brand-red/30"
+                                : ""
+                            }
+                          >
+                            {author}
+                            {i < pub.authors.length - 1 ? ", " : ""}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-6">
+                        <span className="text-sm font-bold text-slate-700 italic">
+                          {pub.venue}
+                        </span>
+                        {pub.tags && pub.tags.length > 0 && (
+                          <div className="flex gap-2">
+                            {pub.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="text-[10px] text-slate-400 font-mono uppercase tracking-widest px-2 py-0.5 border border-slate-100 rounded"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0 hidden md:block">
+                      {pub.link && (
+                        <a
+                          href={pub.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center justify-center w-12 h-12 rounded-full bg-brand-red text-white shadow-lg hover:scale-110 active:scale-95 transition-all"
+                        >
+                          <ArrowUpRight size={20} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           ))}
 
-          {filteredPubs.length === 0 && (
+          {publications.length === 0 && (
             <div className="py-20 text-center text-slate-400 font-light italic">
               {t("publications.noPubs")}
             </div>
