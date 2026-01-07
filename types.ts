@@ -90,6 +90,7 @@ export interface NewsItem {
   author?: string;
   isPublished?: boolean;
   isPinned?: boolean;
+  order?: number;
   views?: number;
   visitorLogs?: NewsVisitorLog[];
 }

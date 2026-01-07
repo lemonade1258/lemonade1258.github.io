@@ -17,6 +17,7 @@ import {
   X,
   Eye,
   ArrowUpCircle,
+  Hash,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -88,6 +89,7 @@ const NewsManager: React.FC = () => {
             day: "numeric",
           }),
         isPinned: editingItem.isPinned || false,
+        order: editingItem.order || 0,
       } as NewsItem;
 
       if (editingItem.id) {
@@ -116,6 +118,7 @@ const NewsManager: React.FC = () => {
         content: "",
         contentZh: "",
         isPinned: false,
+        order: 0,
       }
     );
     setIsModalOpen(true);
@@ -156,6 +159,7 @@ const NewsManager: React.FC = () => {
         <table className="w-full text-left">
           <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-bold tracking-wider">
             <tr>
+              <th className="p-4 border-b">Order</th>
               <th className="p-4 border-b">Status</th>
               <th className="p-4 border-b">Date</th>
               <th className="p-4 border-b">Title</th>
@@ -171,6 +175,11 @@ const NewsManager: React.FC = () => {
                   item.isPinned ? "bg-red-50/30" : ""
                 }`}
               >
+                <td className="p-4">
+                  <span className="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-600">
+                    #{item.order || 0}
+                  </span>
+                </td>
                 <td className="p-4">
                   {item.isPinned ? (
                     <span className="flex items-center gap-1 text-brand-red font-bold text-[10px] uppercase">
@@ -243,7 +252,7 @@ const NewsManager: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-6 flex-grow">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Category
@@ -274,6 +283,22 @@ const NewsManager: React.FC = () => {
                     }
                     className="w-full p-2 border rounded"
                     placeholder="e.g. February 24, 2024"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex items-center gap-1">
+                    <Hash size={14} /> Sort Order (数字越小越靠前)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingItem.order || 0}
+                    onChange={(e) =>
+                      setEditingItem({
+                        ...editingItem,
+                        order: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full p-2 border rounded"
                   />
                 </div>
               </div>
