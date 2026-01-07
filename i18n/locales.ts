@@ -18,7 +18,7 @@ export const translations = {
       schoolName: "School of Artificial Intelligence, Wuhan University",
       location: "Wuhan, China",
       labFullName: "Center for Language and Information Research",
-      labName: "CLAIR",
+      labName: "CLAIN",
       hiring: "Join Us",
       researchAreas: "Research Areas",
       partners: "Collaborating Institutions",
@@ -33,7 +33,6 @@ export const translations = {
       admin: "Admin",
     },
     hero: {
-      // These might not be used in new design, but keeping for compatibility
       subtitle: "Next Generation Laboratory",
       title_1: "Language,",
       title_2: "Information",
@@ -146,7 +145,7 @@ export const translations = {
       schoolName: "武汉大学人工智能学院",
       location: "中国武汉",
       labFullName: "语言与信息研究中心",
-      labName: "CLAIR",
+      labName: "CLAIN",
       hiring: "加入我们",
       researchAreas: "研究领域",
       partners: "合作机构",

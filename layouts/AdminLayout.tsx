@@ -34,7 +34,7 @@ const AdminLayout: React.FC = () => {
       <aside className="w-64 bg-slate-900 text-white fixed h-full z-20 hidden md:flex flex-col">
         <div className="h-20 flex items-center px-6 border-b border-white/10">
           <Flame className="w-6 h-6 text-brand-red mr-3" />
-          <span className="font-bold tracking-wider">CLAIR ADMIN</span>
+          <span className="font-bold tracking-wider">CLAIN ADMIN</span>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -79,7 +79,7 @@ const AdminLayout: React.FC = () => {
       <main className="flex-1 md:ml-64 min-h-screen flex flex-col">
         {/* Mobile Header */}
         <header className="md:hidden h-16 bg-slate-900 text-white flex items-center justify-between px-4">
-          <span className="font-bold">CLAIR ADMIN</span>
+          <span className="font-bold">CLAIN ADMIN</span>
           <button onClick={handleLogout}>
             <LogOut size={18} />
           </button>

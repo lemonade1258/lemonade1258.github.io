@@ -318,7 +318,7 @@ const People: React.FC = () => {
             {t("nav.people")}
           </h1>
           <p className="text-lg text-slate-500 font-light max-w-2xl">
-            Meet the faculty, students, and staff of CLAIR.
+            Meet the faculty, students, and staff of CLAIN.
           </p>
         </header>
 

@@ -1,6 +1,6 @@
 import { Publication, Person, NewsItem, ContactInfo, EventItem } from "./types";
 
-export const LAB_NAME = "CLAIR";
+export const LAB_NAME = "CLAIN";
 export const LAB_FULL_NAME = "Center for Language and Information Research";
 export const UNIVERSITY_NAME = "Wuhan University";
 
@@ -21,8 +21,8 @@ export const CONTACT_DEFAULTS: ContactInfo = {
     "Center for Language and Information Research\nComputer Science Building, Room 502\nWuhan University\nWuhan, Hubei, 430072\nP.R. China",
   addressZh:
     "语言与信息研究中心\n计算机学院 502 室\n武汉大学\n湖北省武汉市 430072\n中国",
-  emailGeneral: "contact@whu-clair.edu.cn",
-  emailAdmissions: "admissions@whu-clair.edu.cn",
+  emailGeneral: "contact@whu-clain.edu.cn",
+  emailAdmissions: "admissions@whu-clain.edu.cn",
   introEn:
     "We are located at the heart of the Wuhan University campus. We welcome visits from prospective students and collaborators.",
   introZh: "我们位于武汉大学校园中心。欢迎未来的学生和合作伙伴来访。",
@@ -32,8 +32,8 @@ export const CONTACT_DEFAULTS: ContactInfo = {
   mapEmbedUrl:
     "https://maps.google.com/maps?width=100%&height=600&hl=en&q=Wuhan%20University&ie=UTF8&t=m&z=14&iwloc=B&output=embed",
   welcomeTitleEn:
-    "Welcome to the Center for Language and Information Research (CLAIR)! 👋",
-  welcomeTitleZh: "欢迎来到语言与信息研究中心 (CLAIR)! 👋",
+    "Welcome to the Center for Language and Information Research (CLAIN)! 👋",
+  welcomeTitleZh: "欢迎来到语言与信息研究中心 (CLAIN)! 👋",
   welcomeTextEn:
     "The Center for Language and Information Research is an innovative Artificial Intelligence (AI) research center at the School of Artificial Intelligence, Wuhan University.",
   welcomeTextZh:

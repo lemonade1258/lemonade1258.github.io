@@ -51,8 +51,8 @@ const Tour: React.FC = () => {
     contactInfo?.welcomeTitleZh,
     contactInfo?.welcomeTitleEn,
     isZh
-      ? "欢迎来到语言与信息研究中心 (CLAIR)! 👋"
-      : "Welcome to the Center for Language and Information Research (CLAIR)! 👋"
+      ? "欢迎来到语言与信息研究中心 (CLAIN)! 👋"
+      : "Welcome to the Center for Language and Information Research (CLAIN)! 👋"
   );
 
   const welcomeText = getText(
