@@ -11,15 +11,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Simply check if a token exists. Backend will reject invalid ones.
-    const token = localStorage.getItem("admin_token");
-    if (token) {
-      setIsAuthenticated(true);
-    }
-  }, []);
+  // Initialize state synchronously to avoid race condition on route protection
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !!localStorage.getItem("admin_token");
+  });
 
   const login = (token: string) => {
     localStorage.setItem("admin_token", token);

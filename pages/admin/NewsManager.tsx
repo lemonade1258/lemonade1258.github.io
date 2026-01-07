@@ -38,7 +38,7 @@ const NewsManager: React.FC = () => {
       setNews(data);
       setFiltered(data);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch News Error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +56,7 @@ const NewsManager: React.FC = () => {
       return (
         titleEn.includes(term) ||
         titleZh.includes(term) ||
-        item.category.toLowerCase().includes(term)
+        (item.category && item.category.toLowerCase().includes(term))
       );
     });
     setFiltered(results);
@@ -67,8 +67,8 @@ const NewsManager: React.FC = () => {
       try {
         await deleteNews(id);
         refreshData();
-      } catch (err) {
-        alert("Failed to delete");
+      } catch (err: any) {
+        alert(`Failed to delete: ${err.message}`);
       }
     }
   };
@@ -84,20 +84,34 @@ const NewsManager: React.FC = () => {
     try {
       const payload = {
         ...editingItem,
-        id: editingItem.id || Date.now().toString(),
-        date: editingItem.date || new Date().toLocaleDateString(),
+        id: editingItem.id || `news_${Date.now()}`,
+        date:
+          editingItem.date ||
+          new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
       } as NewsItem;
 
       if (editingItem.id) {
+        console.log("Updating news:", payload.id);
         await updateNews(payload);
       } else {
+        console.log("Creating news");
         await createNews(payload);
       }
       setIsModalOpen(false);
       setEditingItem({});
       refreshData();
-    } catch (err) {
-      alert("Failed to save");
+      alert("Saved successfully!");
+    } catch (err: any) {
+      console.error("Save News Failed:", err);
+      alert(
+        `Failed to save: ${
+          err.message || "Unknown server error"
+        }. Check console for details.`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +163,7 @@ const NewsManager: React.FC = () => {
       </div>
 
       {isLoading && (
-        <div className="text-center py-4 text-slate-400">Loading...</div>
+        <div className="text-center py-4 text-slate-400">Processing...</div>
       )}
 
       <div className="overflow-x-auto">

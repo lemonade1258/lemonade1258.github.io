@@ -183,8 +183,11 @@ const Tour: React.FC = () => {
                     />
                   </div>
 
-                  <div className="mt-4 text-center px-1">
-                    <p className="text-[10px] font-bold text-slate-700 group-hover:text-brand-red transition-colors uppercase tracking-widest line-clamp-1">
+                  <div className="mt-4 text-center px-1 relative w-full h-8">
+                    <p
+                      className="text-[10px] font-bold text-slate-700 group-hover:text-brand-red transition-all uppercase tracking-widest line-clamp-1 group-hover:line-clamp-none group-hover:absolute group-hover:left-0 group-hover:right-0 group-hover:bg-white group-hover:z-10 group-hover:py-2 group-hover:px-2 group-hover:shadow-md group-hover:rounded-md group-hover:border group-hover:border-slate-100"
+                      title={getText(partner.nameZh, partner.name)}
+                    >
                       {getText(partner.nameZh, partner.name)}
                     </p>
                   </div>
