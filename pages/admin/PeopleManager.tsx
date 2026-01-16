@@ -27,8 +27,8 @@ import {
 import { useLanguage } from "../../contexts/LanguageContext";
 
 /**
- * 专业级图片裁剪器 (修正版)
- * 解决了大图预览压缩导致的缩放不匹配问题
+ * 旗舰版图片裁剪器 (物理像素校准版)
+ * 解决大图缩放失效、保存位移偏差的核心方案
  */
 const ImageCropperModal: React.FC<{
   imageSrc: string;
@@ -47,51 +47,54 @@ const ImageCropperModal: React.FC<{
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // 强制刷新 URL 绕过缓存
+  const UI_BOX_SIZE = 320; // 预览框大小 (px)
+  const EXPORT_SIZE = 600; // 导出文件大小 (px)
+  const RATIO = EXPORT_SIZE / UI_BOX_SIZE; // 物理换算比 (1.875)
+
+  // 1. 资源安全加载
   const [safeSrc] = useState(() => {
     if (!imageSrc) return "";
     if (imageSrc.startsWith("data:")) return imageSrc;
     const connector = imageSrc.includes("?") ? "&" : "?";
-    return `${imageSrc}${connector}cv=${Date.now()}`;
+    return `${imageSrc}${connector}cropper_v=${Date.now()}`;
   });
 
-  // 高性能视觉更新
+  // 2. 视觉同步更新 (Direct DOM Manipulation for Performance)
   const updateVisuals = useCallback(() => {
-    if (imgDisplayRef.current) {
-      const { x, y } = offsetRef.current;
-      const z = zoomRef.current;
-      // 使用 translate3d 开启 GPU 加速
-      // 这里的顺序必须是：居中修正 -> 用户位移 -> 用户缩放
-      imgDisplayRef.current.style.transform = `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, 0) scale(${z})`;
-    }
+    if (!imgDisplayRef.current) return;
+    const { x, y } = offsetRef.current;
+    const z = zoomRef.current;
+    // 关键：强制 translate3d 避免子像素渲染偏差
+    imgDisplayRef.current.style.transform = `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, 0) scale(${z})`;
   }, []);
 
-  // 初始适配：让图片自动缩放到刚好覆盖裁剪框
+  // 3. 初始自动适配逻辑
   const handleAutoFit = useCallback(() => {
     if (!imgDisplayRef.current) return;
     const img = imgDisplayRef.current;
-    const boxSize = 320;
-    // 计算最小缩放比，确保图片覆盖裁剪框
+    // 计算图片以其“自然像素”在 320px 框中显示的初始缩放比
     const scale =
-      Math.max(boxSize / img.naturalWidth, boxSize / img.naturalHeight) * 1.1;
+      Math.max(
+        UI_BOX_SIZE / img.naturalWidth,
+        UI_BOX_SIZE / img.naturalHeight
+      ) * 1.05;
     zoomRef.current = scale;
     offsetRef.current = { x: 0, y: 0 };
     setZoom(scale);
     updateVisuals();
   }, [updateVisuals]);
 
-  // 滚轮缩放控制
+  // 4. 滚轮与拖拽逻辑
   const handleWheel = (e: React.WheelEvent) => {
     if (imgStatus !== "loaded") return;
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1; // 10% 步进
-    const nextZoom = Math.min(Math.max(zoomRef.current * delta, 0.01), 20);
+    const factor = e.deltaY > 0 ? 0.92 : 1.08;
+    const nextZoom = Math.min(Math.max(zoomRef.current * factor, 0.01), 20);
     zoomRef.current = nextZoom;
     setZoom(nextZoom);
     updateVisuals();
   };
 
-  // 拖拽控制
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
@@ -112,15 +115,12 @@ const ImageCropperModal: React.FC<{
         x: e.clientX - dragStart.current.x,
         y: e.clientY - dragStart.current.y,
       };
-      // 使用 requestAnimationFrame 保证丝滑
       requestAnimationFrame(updateVisuals);
     };
-
     const onMouseUp = () => {
       isDragging.current = false;
       if (containerRef.current) containerRef.current.style.cursor = "move";
     };
-
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
     return () => {
@@ -129,7 +129,7 @@ const ImageCropperModal: React.FC<{
     };
   }, [updateVisuals]);
 
-  // 精确导出：解决缩放差别的核心逻辑
+  // 5. 零误差 Canvas 导出算法
   const handleConfirm = () => {
     const img = imageRef.current;
     if (!img || imgStatus !== "loaded") return;
@@ -138,29 +138,29 @@ const ImageCropperModal: React.FC<{
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const exportSize = 600; // 输出 600px
-    const uiBoxSize = 320; // 预览框 320px
-    const ratio = exportSize / uiBoxSize; // 像素转换比例 (1.875)
+    canvas.width = EXPORT_SIZE;
+    canvas.height = EXPORT_SIZE;
 
-    canvas.width = exportSize;
-    canvas.height = exportSize;
-
-    // 高质量渲染设置
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+    // 填充底色
     ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, exportSize, exportSize);
+    ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE);
 
-    // 变换序列 (严格匹配 UI 逻辑)
-    // 1. 移动到画布中心
-    ctx.translate(exportSize / 2, exportSize / 2);
-    // 2. 应用位移（乘以比例系数）
-    ctx.translate(offsetRef.current.x * ratio, offsetRef.current.y * ratio);
-    // 3. 应用缩放（缩放本身就是比例，不需要额外计算，但要叠加 ratio 转换）
-    ctx.scale(zoomRef.current * ratio, zoomRef.current * ratio);
+    // 核心坐标变换：
+    // 我们需要将 UI 上的操作 (320px 坐标系) 映射到 Canvas (600px 坐标系)
+
+    // a. 将原点移至画布物理中心 (300, 300)
+    ctx.translate(EXPORT_SIZE / 2, EXPORT_SIZE / 2);
+
+    // b. 应用偏移量（UI 像素 * 物理转换比）
+    ctx.translate(offsetRef.current.x * RATIO, offsetRef.current.y * RATIO);
+
+    // c. 应用缩放（UI 缩放倍数 * 物理转换比）
+    // 注意：这里的 zoomRef 本身就是相对于 naturalWidth 的倍数
+    ctx.scale(zoomRef.current * RATIO, zoomRef.current * RATIO);
 
     try {
-      // 4. 以图片自然中心对齐原点绘制
+      // d. 绘制图片（图片中心点对齐当前原点）
+      // 此时坐标系已经根据偏移和缩放准备好，我们只需要把图片的原生中心画在 (0,0) 即可
       ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
 
       canvas.toBlob(
@@ -171,29 +171,32 @@ const ImageCropperModal: React.FC<{
         0.95
       );
     } catch (e) {
-      alert("安全限制：无法访问远程图片像素。请确保 OSS 配置了 CORS。");
+      alert(
+        "由于图片存储服务器的安全限制 (CORS)，无法完成裁剪。请尝试上传本地文件。"
+      );
       onCancel();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-2xl flex items-center justify-center p-4">
       <div className="w-full max-w-3xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
         <div className="p-8 border-b flex justify-between items-center bg-slate-50/50">
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">调整裁剪</h3>
-            <p className="text-sm text-slate-400 mt-1">
-              {isCircle ? "圆形" : "方形"}模式 · 支持滚轮缩放
-              <span className="ml-4 text-brand-red/50">
-                当前倍率: {zoomRef.current.toFixed(2)}x
-              </span>
+            <h3 className="text-2xl font-bold text-slate-800">
+              像素级精准裁剪
+            </h3>
+            <p className="text-sm text-slate-400 mt-1 flex items-center gap-2">
+              已同步物理坐标系 · 当前输出: {EXPORT_SIZE}x{EXPORT_SIZE}px
+              <span className="inline-block w-1 h-1 bg-slate-300 rounded-full"></span>
+              倍率: {zoomRef.current.toFixed(3)}x
             </p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleAutoFit}
               className="p-3 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
-              title="自动适配"
+              title="自动重置"
             >
               <RefreshCcw size={24} />
             </button>
@@ -206,7 +209,7 @@ const ImageCropperModal: React.FC<{
           </div>
         </div>
 
-        {/* 核心显示区 */}
+        {/* 交互视口 */}
         <div
           ref={containerRef}
           onWheel={handleWheel}
@@ -217,24 +220,24 @@ const ImageCropperModal: React.FC<{
             <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 gap-4 z-20">
               <Loader2 className="animate-spin text-brand-red" size={48} />
               <span className="text-xs font-bold uppercase tracking-widest">
-                初始化资源...
+                正在采样图片像素...
               </span>
             </div>
           )}
 
-          {/* 实时预览：强制 max-none 确保比例 1:1 */}
+          {/* 实时预览层 */}
           <img
             ref={imgDisplayRef}
             crossOrigin="anonymous"
             src={safeSrc}
-            alt="Preview"
+            alt="UI View"
             onLoad={() => {
               setImgStatus("loaded");
               handleAutoFit();
             }}
             onError={() => setImgStatus("error")}
             draggable={false}
-            className={`absolute select-none pointer-events-none max-none w-auto h-auto will-change-transform transition-opacity duration-500 ${
+            className={`absolute select-none pointer-events-none max-none w-auto h-auto will-change-transform ${
               imgStatus === "loaded" ? "opacity-100" : "opacity-0"
             }`}
             style={{
@@ -245,23 +248,24 @@ const ImageCropperModal: React.FC<{
             }}
           />
 
-          {/* 隐藏数据源 */}
+          {/* 隐藏数据源 (保证绘图时使用最原始数据) */}
           <img
             ref={imageRef}
             src={safeSrc}
             crossOrigin="anonymous"
             className="hidden"
-            alt="Source"
+            alt="Source Data"
           />
 
-          {/* 蒙版 */}
+          {/* 精准蒙版层 */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div
-              className={`w-[320px] h-[320px] border-2 border-white/40 shadow-[0_0_0_2000px_rgba(15,23,42,0.85)] relative ${
+              style={{ width: `${UI_BOX_SIZE}px`, height: `${UI_BOX_SIZE}px` }}
+              className={`border-[2px] border-white/60 shadow-[0_0_0_2000px_rgba(15,23,42,0.85)] relative ${
                 isCircle ? "rounded-full" : "rounded-none"
               }`}
             >
-              {/* 辅助线 */}
+              {/* 构图辅助线 */}
               <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20">
                 <div className="border-r border-white"></div>
                 <div className="border-r border-white"></div>
@@ -269,7 +273,7 @@ const ImageCropperModal: React.FC<{
                 <div className="border-b border-white col-span-3"></div>
               </div>
               {!isCircle && (
-                <div className="absolute inset-0 border border-brand-red/50">
+                <div className="absolute inset-0 border border-brand-red/40">
                   <div className="absolute -top-1 -left-1 w-8 h-8 border-t-2 border-l-2 border-brand-red"></div>
                   <div className="absolute -top-1 -right-1 w-8 h-8 border-t-2 border-r-2 border-brand-red"></div>
                   <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-2 border-l-2 border-brand-red"></div>
@@ -280,7 +284,7 @@ const ImageCropperModal: React.FC<{
           </div>
         </div>
 
-        {/* 下方控制 */}
+        {/* 控制面板 */}
         <div className="p-10 bg-white">
           <div className="flex items-center gap-8 mb-10">
             <button
@@ -289,7 +293,7 @@ const ImageCropperModal: React.FC<{
                 setZoom(zoomRef.current);
                 updateVisuals();
               }}
-              className="text-slate-300 hover:text-brand-red transition-colors"
+              className="text-slate-300 hover:text-brand-red transition-all"
             >
               <ZoomOut size={28} />
             </button>
@@ -323,22 +327,27 @@ const ImageCropperModal: React.FC<{
                 setZoom(zoomRef.current);
                 updateVisuals();
               }}
-              className="text-slate-300 hover:text-brand-red transition-colors"
+              className="text-slate-300 hover:text-brand-red transition-all"
             >
               <ZoomIn size={28} />
             </button>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-3">
-              <Move size={16} /> 鼠标右键或滚轮快速缩放
-            </span>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                <Move size={14} /> 鼠标拖拽平移 · 滚轮精细缩放
+              </span>
+              <span className="text-[10px] text-brand-red/50 mt-1 font-mono">
+                物理投影比例: 1 : 1.875
+              </span>
+            </div>
             <div className="flex gap-4">
               <button
                 onClick={onCancel}
-                className="px-10 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all"
+                className="px-10 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-all"
               >
-                取消
+                放弃修改
               </button>
               <button
                 onClick={handleConfirm}
@@ -346,10 +355,10 @@ const ImageCropperModal: React.FC<{
                 className={`px-16 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 flex items-center gap-3 ${
                   imgStatus !== "loaded"
                     ? "opacity-50 grayscale cursor-not-allowed"
-                    : "hover:bg-red-700"
+                    : "hover:bg-red-700 hover:shadow-red-900/30"
                 }`}
               >
-                <Save size={20} /> 确认并保存像素数据
+                <Save size={20} /> 同步像素数据
               </button>
             </div>
           </div>
@@ -454,7 +463,7 @@ const PeopleManager: React.FC = () => {
     if (editingItem.avatar && !editingItem.avatar.includes("ui-avatars.com")) {
       setCropSrc(editingItem.avatar);
     } else {
-      alert("请先上传一张原始本地照片。");
+      alert("该成员目前使用默认占位图，请先通过本地上传一张原始照片。");
     }
   };
 
@@ -468,7 +477,7 @@ const PeopleManager: React.FC = () => {
       setEditingItem((prev) => ({ ...prev, avatar: url }));
       setCropSrc(null);
     } catch (err) {
-      alert("OSS 上传失败，请检查网络权限。");
+      alert("OSS 上传失败，请检查网络连接或权限设置。");
     } finally {
       setIsUploading(false);
     }
@@ -679,7 +688,7 @@ const PeopleManager: React.FC = () => {
                       onClick={handleEditExistingPhoto}
                       className="px-6 py-3 bg-slate-900 text-white text-sm font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-brand-dark transition-all shadow-lg active:scale-95"
                     >
-                      <Crop size={18} /> 编辑/缩放当前照片
+                      <Crop size={18} /> 调出精准裁剪器
                     </button>
                   </div>
                 </div>
@@ -824,7 +833,7 @@ const PeopleManager: React.FC = () => {
                 onClick={handleSave}
                 className="px-20 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-2xl hover:bg-red-700 transition-all active:scale-95"
               >
-                提交保存
+                提交并保存
               </button>
             </div>
           </div>
