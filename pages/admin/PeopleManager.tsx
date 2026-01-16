@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   fetchPeople,
   createPerson,
   updatePerson,
   deletePerson,
   exportToCSV,
+  uploadFile,
 } from "../../lib/dataStore";
 import { Person, PersonCategory } from "../../types";
 import {
@@ -16,8 +17,177 @@ import {
   Save,
   X,
   AlertTriangle,
+  Upload,
+  ZoomIn,
+  ZoomOut,
+  Move,
+  Camera,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
+
+/**
+ * Image Cropper Modal Component
+ * Allows visual panning and zooming to generate a 1:1 square crop.
+ */
+const ImageCropperModal: React.FC<{
+  imageSrc: string;
+  onConfirm: (croppedBlob: Blob) => void;
+  onCancel: () => void;
+}> = ({ imageSrc, onConfirm, onCancel }) => {
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleConfirm = () => {
+    if (!imageRef.current || !containerRef.current) return;
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Output a high-quality 600x600 square
+    const outputSize = 600;
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+
+    const img = imageRef.current;
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+
+    // The visual crop box is 320px in the UI
+    const uiCropSize = 320;
+
+    // Logic: Map the UI positioning to the High-Res Canvas
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, outputSize, outputSize);
+
+    ctx.translate(outputSize / 2, outputSize / 2);
+    ctx.scale(
+      (outputSize / uiCropSize) * zoom,
+      (outputSize / uiCropSize) * zoom
+    );
+    ctx.translate(offset.x / zoom, offset.y / zoom);
+    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+    canvas.toBlob(
+      (blob) => {
+        if (blob) onConfirm(blob);
+      },
+      "image/jpeg",
+      0.9
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
+        <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
+          <div>
+            <h3 className="text-xl font-bold text-slate-800">裁剪成员照片</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              拖拽图片调整位置，滑块控制缩放
+            </p>
+          </div>
+          <button
+            onClick={onCancel}
+            className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div
+          className="bg-slate-200 relative h-[450px] overflow-hidden cursor-move touch-none"
+          ref={containerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          <img
+            ref={imageRef}
+            src={imageSrc}
+            alt="To crop"
+            draggable={false}
+            className="absolute select-none pointer-events-none"
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+              transformOrigin: "center",
+            }}
+          />
+
+          {/* Mask Overlay */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className="w-[320px] h-[320px] border-4 border-brand-red rounded shadow-[0_0_0_9999px_rgba(15,23,42,0.7)] relative">
+              {/* Rule of thirds grid */}
+              <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="border-r border-white"></div>
+                ))}
+                <div className="hidden"></div>{" "}
+                {/* Placeholder for grid logic */}
+                {[...Array(2)].map((_, i) => (
+                  <div key={i + 2} className="border-b border-white"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-8 bg-white space-y-8">
+          <div className="flex items-center gap-6">
+            <ZoomOut size={20} className="text-slate-400" />
+            <input
+              type="range"
+              min="0.1"
+              max="4"
+              step="0.01"
+              value={zoom}
+              onChange={(e) => setZoom(parseFloat(e.target.value))}
+              className="flex-grow h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brand-red"
+            />
+            <ZoomIn size={20} className="text-slate-400" />
+          </div>
+
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={onCancel}
+              className="px-8 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-all"
+            >
+              取消
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="px-12 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 transition-all active:scale-95 flex items-center gap-2"
+            >
+              <Save size={18} /> 确认并应用
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PeopleManager: React.FC = () => {
   const { t } = useLanguage();
@@ -27,15 +197,15 @@ const PeopleManager: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Partial<Person>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Helpers for Teacher Profile Arrays (English)
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+
   const [researchInput, setResearchInput] = useState("");
   const [achieveInput, setAchieveInput] = useState("");
   const [projectInput, setProjectInput] = useState("");
   const [influenceInput, setInfluenceInput] = useState("");
-
-  // Helpers for Teacher Profile Arrays (Chinese)
   const [researchInputZh, setResearchInputZh] = useState("");
   const [achieveInputZh, setAchieveInputZh] = useState("");
   const [projectInputZh, setProjectInputZh] = useState("");
@@ -51,7 +221,6 @@ const PeopleManager: React.FC = () => {
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e.message || "Failed to fetch data");
-      // Initialize empty so UI can at least be seen
       setPeople([]);
       setFiltered([]);
     } finally {
@@ -74,7 +243,6 @@ const PeopleManager: React.FC = () => {
   const handleSave = async () => {
     let newItem = { ...editingItem } as Person;
 
-    // Process textarea inputs into arrays for TeacherProfile if applicable
     if (
       newItem.category === "Teachers" ||
       newItem.category === "Visiting Scholars"
@@ -86,7 +254,6 @@ const PeopleManager: React.FC = () => {
           achievements: [],
           projects: [],
         };
-
       newItem.teacherProfile.researchAreas = researchInput
         .split("\n")
         .filter((s) => s.trim());
@@ -99,8 +266,6 @@ const PeopleManager: React.FC = () => {
       newItem.teacherProfile.influence = influenceInput
         .split("\n")
         .filter((s) => s.trim());
-
-      // Save Chinese arrays
       newItem.teacherProfile.researchAreasZh = researchInputZh
         .split("\n")
         .filter((s) => s.trim());
@@ -118,7 +283,6 @@ const PeopleManager: React.FC = () => {
     setIsLoading(true);
     try {
       if (!newItem.id) newItem.id = Date.now().toString();
-
       if (editingItem.id) {
         await updatePerson(newItem);
       } else {
@@ -128,22 +292,35 @@ const PeopleManager: React.FC = () => {
       setEditingItem({});
       refreshData();
     } catch (err: any) {
-      alert(
-        `Failed to save person: ${err.message}. Please check if backend is running.`
-      );
+      alert(`Failed to save person: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Delete this person?")) {
-      try {
-        await deletePerson(id);
-        refreshData();
-      } catch (err) {
-        alert("Failed to delete");
-      }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCropSrc(reader.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleCropConfirm = async (blob: Blob) => {
+    setIsUploading(true);
+    try {
+      const file = new File([blob], `avatar_${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
+      const url = await uploadFile(file);
+      setEditingItem((prev) => ({ ...prev, avatar: url }));
+      setCropSrc(null);
+    } catch (err) {
+      alert("Upload failed");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -151,7 +328,8 @@ const PeopleManager: React.FC = () => {
     const freshItem: Partial<Person> = item || {
       category: "Teachers",
       order: 1,
-      avatar: "https://picsum.photos/400/400",
+      avatar:
+        "https://ui-avatars.com/api/?name=New+User&background=f1f5f9&color=cbd5e1",
       teacherProfile: {
         position: "",
         researchAreas: [],
@@ -166,8 +344,6 @@ const PeopleManager: React.FC = () => {
     };
 
     setEditingItem(freshItem);
-
-    // Load array data into textareas
     if (freshItem.teacherProfile) {
       setResearchInput(
         freshItem.teacherProfile.researchAreas?.join("\n") || ""
@@ -175,8 +351,6 @@ const PeopleManager: React.FC = () => {
       setAchieveInput(freshItem.teacherProfile.achievements?.join("\n") || "");
       setProjectInput(freshItem.teacherProfile.projects?.join("\n") || "");
       setInfluenceInput(freshItem.teacherProfile.influence?.join("\n") || "");
-
-      // Load Chinese arrays
       setResearchInputZh(
         freshItem.teacherProfile.researchAreasZh?.join("\n") || ""
       );
@@ -187,17 +361,7 @@ const PeopleManager: React.FC = () => {
       setInfluenceInputZh(
         freshItem.teacherProfile.influenceZh?.join("\n") || ""
       );
-    } else {
-      setResearchInput("");
-      setAchieveInput("");
-      setProjectInput("");
-      setInfluenceInput("");
-      setResearchInputZh("");
-      setAchieveInputZh("");
-      setProjectInputZh("");
-      setInfluenceInputZh("");
     }
-
     setIsModalOpen(true);
   };
 
@@ -205,9 +369,9 @@ const PeopleManager: React.FC = () => {
     "Teachers",
     "Visiting Scholars",
     "PhD",
-    "Master",
-    "Professional Master",
     "Academic Master",
+    "Professional Master",
+    "Master",
     "RA",
     "Intern",
     "Secretary",
@@ -222,26 +386,26 @@ const PeopleManager: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={() => exportToCSV(filtered, "people.csv")}
-            className="px-4 py-2 border rounded hover:bg-slate-50 flex items-center"
+            className="px-4 py-2 border rounded hover:bg-slate-50 flex items-center transition-colors font-medium"
           >
             <Download size={16} className="mr-2" /> Export
           </button>
           <button
             onClick={() => openModal()}
-            className="px-4 py-2 bg-brand-red text-white rounded hover:bg-red-700 flex items-center"
+            className="px-4 py-2 bg-brand-red text-white rounded hover:bg-red-700 flex items-center transition-all shadow-md font-bold"
           >
-            <Plus size={16} className="mr-2" /> {t("admin.add")}
+            <Plus size={16} className="mr-2" /> Add Member
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6 border-b pb-4">
+      <div className="flex flex-wrap gap-2 mb-8 border-b pb-4">
         <button
           onClick={() => setActiveCategory("All")}
-          className={`px-3 py-1 rounded-full text-xs font-bold ${
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
             activeCategory === "All"
               ? "bg-slate-800 text-white"
-              : "bg-slate-100 text-slate-600"
+              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
           }`}
         >
           All
@@ -250,10 +414,10 @@ const PeopleManager: React.FC = () => {
           <button
             key={c}
             onClick={() => setActiveCategory(c)}
-            className={`px-3 py-1 rounded-full text-xs font-bold ${
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
               activeCategory === c
                 ? "bg-brand-red text-white"
-                : "bg-slate-100 text-slate-600"
+                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
             }`}
           >
             {c}
@@ -261,59 +425,59 @@ const PeopleManager: React.FC = () => {
         ))}
       </div>
 
-      {isLoading && <div className="text-center py-4">Loading...</div>}
+      {isLoading && (
+        <div className="text-center py-20 animate-pulse text-slate-300 font-serif">
+          Updating staff records...
+        </div>
+      )}
 
       {errorMsg && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 flex items-center">
-          <AlertTriangle className="mr-2" size={18} />
-          <span>Connection Error: {errorMsg}. Backend might be offline.</span>
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4 flex items-center shadow-sm">
+          <AlertTriangle className="mr-2 shrink-0" size={18} />
+          <span className="text-sm">Server Error: {errorMsg}</span>
         </div>
       )}
 
       <div className="flex-grow overflow-auto">
-        {filtered.length === 0 && !isLoading && (
-          <div className="text-center py-10 text-slate-400 italic border-2 border-dashed border-slate-100 rounded-lg">
-            No people found. Click "Add New" to create one.
-          </div>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filtered.map((person) => (
             <div
               key={person.id}
-              className="border rounded-lg p-4 flex gap-4 items-start relative group bg-slate-50 hover:shadow-md transition-shadow"
+              className="border border-slate-100 rounded-2xl p-6 flex gap-6 items-center relative group bg-white hover:shadow-xl hover:border-brand-red/10 transition-all duration-300"
             >
-              <img
-                src={person.avatar}
-                alt={person.name}
-                className="w-14 h-14 rounded-full object-cover bg-slate-200"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    "https://ui-avatars.com/api/?name=" + person.name;
-                }}
-              />
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 ring-4 ring-slate-50 shrink-0">
+                <img
+                  src={person.avatar}
+                  alt={person.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-slate-800 truncate">
-                  {person.name}
+                <h3 className="font-serif font-bold text-slate-800 text-lg group-hover:text-brand-red transition-colors">
+                  {person.nameZh || person.name}
                 </h3>
-                <p className="text-xs text-brand-red font-bold mb-0.5">
+                <p className="text-[10px] text-brand-red font-bold uppercase tracking-widest mb-1">
                   {person.category}
                 </p>
-                <p className="text-xs text-slate-500 truncate">
-                  {person.title}
+                <p className="text-xs text-slate-400 italic truncate">
+                  {person.title || "Researcher"}
                 </p>
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => openModal(person)}
-                  className="p-1.5 bg-white border rounded text-blue-600 hover:bg-blue-50"
+                  className="p-2 text-slate-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                 >
-                  <Edit2 size={14} />
+                  <Edit2 size={16} />
                 </button>
                 <button
-                  onClick={() => handleDelete(person.id)}
-                  className="p-1.5 bg-white border rounded text-red-600 hover:bg-red-50"
+                  onClick={() => {
+                    if (confirm("Delete?"))
+                      deletePerson(person.id).then(refreshData);
+                  }}
+                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
@@ -321,142 +485,173 @@ const PeopleManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b shrink-0">
-              <h3 className="text-xl font-bold">
-                {editingItem.id ? "Edit Person" : "Add Person"}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl animate-fade-in-up">
+            <div className="flex justify-between items-center p-8 border-b shrink-0 bg-slate-50/50">
+              <h3 className="text-2xl font-serif font-bold text-slate-800">
+                {editingItem.id ? "编辑成员详情" : "新增实验室成员"}
               </h3>
-              <button onClick={() => setIsModalOpen(false)}>
-                <X size={24} className="text-slate-400" />
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+              >
+                <X size={28} className="text-slate-400" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6 flex-grow overflow-y-auto">
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Category
+            <div className="p-10 space-y-10 flex-grow">
+              {/* Photo & Basic Info Section */}
+              <div className="flex flex-col md:flex-row gap-12 items-start">
+                {/* Avatar Upload Trigger */}
+                <div className="flex flex-col items-center gap-5 shrink-0">
+                  <label className="relative cursor-pointer group">
+                    <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl relative bg-slate-100 transition-transform duration-500 group-hover:scale-105">
+                      <img
+                        src={editingItem.avatar}
+                        className="w-full h-full object-cover"
+                        alt="Preview"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-center p-4">
+                        <Camera size={24} className="mb-2" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                          更换照片
+                        </span>
+                      </div>
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-brand-dark/60 flex items-center justify-center">
+                          <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
                   </label>
-                  <select
-                    value={editingItem.category}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        category: e.target.value as PersonCategory,
-                      })
-                    }
-                    className="w-full p-2 border rounded"
-                  >
-                    {categories.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Order (Sort Priority)
-                  </label>
-                  <input
-                    type="number"
-                    value={editingItem.order}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        order: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full p-2 border rounded"
-                  />
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">
+                    点击头像更换并裁剪
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Name (En)
-                  </label>
-                  <input
-                    value={editingItem.name || ""}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, name: e.target.value })
-                    }
-                    className="w-full p-2 border rounded"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Name (Zh)
-                  </label>
-                  <input
-                    value={editingItem.nameZh || ""}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, nameZh: e.target.value })
-                    }
-                    className="w-full p-2 border rounded"
-                  />
-                </div>
+                {/* Information Inputs */}
+                <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                  <div className="md:col-span-2 grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        Category / 分类
+                      </label>
+                      <select
+                        value={editingItem.category}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            category: e.target.value as PersonCategory,
+                          })
+                        }
+                        className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm font-bold focus:border-brand-red outline-none transition-colors"
+                      >
+                        {categories.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        Priority / 排序权重
+                      </label>
+                      <input
+                        type="number"
+                        value={editingItem.order}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            order: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none"
+                      />
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Title (En)
-                  </label>
-                  <input
-                    value={editingItem.title || ""}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, title: e.target.value })
-                    }
-                    className="w-full p-2 border rounded"
-                    placeholder="e.g. Professor"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Title (Zh)
-                  </label>
-                  <input
-                    value={editingItem.titleZh || ""}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem,
-                        titleZh: e.target.value,
-                      })
-                    }
-                    className="w-full p-2 border rounded"
-                  />
-                </div>
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                      Full Name / 姓名
+                    </label>
+                    <input
+                      placeholder="English Name"
+                      value={editingItem.name || ""}
+                      onChange={(e) =>
+                        setEditingItem({ ...editingItem, name: e.target.value })
+                      }
+                      className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm mb-3 focus:border-brand-red outline-none"
+                    />
+                    <input
+                      placeholder="中文姓名"
+                      value={editingItem.nameZh || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          nameZh: e.target.value,
+                        })
+                      }
+                      className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none"
+                    />
+                  </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">
-                    Avatar URL
-                  </label>
-                  <input
-                    value={editingItem.avatar || ""}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, avatar: e.target.value })
-                    }
-                    className="w-full p-2 border rounded text-xs text-slate-500"
-                  />
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                      Title / 职位
+                    </label>
+                    <input
+                      placeholder="Researcher / Student"
+                      value={editingItem.title || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          title: e.target.value,
+                        })
+                      }
+                      className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm mb-3 focus:border-brand-red outline-none"
+                    />
+                    <input
+                      placeholder="职位 (如：教授 / 硕士生)"
+                      value={editingItem.titleZh || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          titleZh: e.target.value,
+                        })
+                      }
+                      className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none"
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Email
+              {/* Links Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t-2 border-slate-50">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Email / 邮箱
                   </label>
                   <input
                     value={editingItem.email || ""}
                     onChange={(e) =>
                       setEditingItem({ ...editingItem, email: e.target.value })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none"
+                    placeholder="example@whu.edu.cn"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Homepage / Website
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                    Homepage / 个人主页
                   </label>
                   <input
                     value={editingItem.homepage || ""}
@@ -466,53 +661,26 @@ const PeopleManager: React.FC = () => {
                         homepage: e.target.value,
                       })
                     }
-                    className="w-full p-2 border rounded"
+                    className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none"
+                    placeholder="https://scholar.google.com/..."
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Bio (En)
-                  </label>
-                  <textarea
-                    value={editingItem.bio || ""}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, bio: e.target.value })
-                    }
-                    className="w-full p-2 border rounded"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Bio (Zh)
-                  </label>
-                  <textarea
-                    value={editingItem.bioZh || ""}
-                    onChange={(e) =>
-                      setEditingItem({ ...editingItem, bioZh: e.target.value })
-                    }
-                    className="w-full p-2 border rounded"
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              {/* Teacher Profile Section - Only show for Teachers/Visiting */}
+              {/* Extended Researcher Profile */}
               {["Teachers", "Visiting Scholars"].includes(
                 editingItem.category as string
               ) && (
-                <div className="border-t pt-6 mt-2">
-                  <h4 className="text-lg font-bold text-slate-800 mb-4">
-                    {t("admin.teacherProfile")}
+                <div className="space-y-8 pt-10 border-t-2 border-slate-50">
+                  <h4 className="text-xs font-bold text-brand-red uppercase tracking-[0.3em] flex items-center gap-3">
+                    <Plus size={16} /> 详细学术档案 / Researcher Extended
+                    Profile
                   </h4>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Position (En)
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">
+                        Academic Position (EN)
                       </label>
                       <input
                         value={editingItem.teacherProfile?.position || ""}
@@ -525,12 +693,12 @@ const PeopleManager: React.FC = () => {
                             },
                           })
                         }
-                        className="w-full p-2 border rounded"
+                        className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Position (Zh)
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">
+                        学术头衔 (中文)
                       </label>
                       <input
                         value={editingItem.teacherProfile?.positionZh || ""}
@@ -543,138 +711,64 @@ const PeopleManager: React.FC = () => {
                             },
                           })
                         }
-                        className="w-full p-2 border rounded"
+                        className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    {/* Research Areas */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Research Areas (En) - One per line
-                        </label>
-                        <textarea
-                          value={researchInput}
-                          onChange={(e) => setResearchInput(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                          placeholder="NLP&#10;Computer Vision"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Research Areas (Zh) - One per line
-                        </label>
-                        <textarea
-                          value={researchInputZh}
-                          onChange={(e) => setResearchInputZh(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                          placeholder="自然语言处理&#10;计算机视觉"
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">
+                        Research Areas (EN) - Line split
+                      </label>
+                      <textarea
+                        value={researchInput}
+                        onChange={(e) => setResearchInput(e.target.value)}
+                        className="w-full p-4 border-2 border-slate-100 rounded-2xl text-xs font-mono bg-slate-50 focus:border-brand-red outline-none"
+                        rows={4}
+                      />
                     </div>
-
-                    {/* Achievements */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Achievements (En) - One per line
-                        </label>
-                        <textarea
-                          value={achieveInput}
-                          onChange={(e) => setAchieveInput(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Achievements (Zh) - One per line
-                        </label>
-                        <textarea
-                          value={achieveInputZh}
-                          onChange={(e) => setAchieveInputZh(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Projects */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Projects (En) - One per line
-                        </label>
-                        <textarea
-                          value={projectInput}
-                          onChange={(e) => setProjectInput(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Projects (Zh) - One per line
-                        </label>
-                        <textarea
-                          value={projectInputZh}
-                          onChange={(e) => setProjectInputZh(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Influence */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Influence / Service (En) - One per line
-                        </label>
-                        <textarea
-                          value={influenceInput}
-                          onChange={(e) => setInfluenceInput(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Influence / Service (Zh) - One per line
-                        </label>
-                        <textarea
-                          value={influenceInputZh}
-                          onChange={(e) => setInfluenceInputZh(e.target.value)}
-                          className="w-full p-2 border rounded text-sm bg-slate-50"
-                          rows={4}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">
+                        研究领域 (中文)
+                      </label>
+                      <textarea
+                        value={researchInputZh}
+                        onChange={(e) => setResearchInputZh(e.target.value)}
+                        className="w-full p-4 border-2 border-slate-100 rounded-2xl text-xs font-mono bg-slate-50 focus:border-brand-red outline-none"
+                        rows={4}
+                      />
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="p-6 border-t bg-slate-50 flex justify-end gap-3 shrink-0">
+            <div className="p-8 border-t shrink-0 flex justify-end gap-4 bg-slate-50/50">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded"
+                className="px-10 py-3 text-slate-500 font-bold hover:bg-slate-200 rounded-2xl transition-all"
               >
-                Cancel
+                取消
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-brand-red text-white rounded"
+                className="px-16 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 transition-all active:scale-95"
               >
-                Save Profile
+                保存档案
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Integrated Image Cropper Modal */}
+      {cropSrc && (
+        <ImageCropperModal
+          imageSrc={cropSrc}
+          onConfirm={handleCropConfirm}
+          onCancel={() => setCropSrc(null)}
+        />
       )}
     </div>
   );
