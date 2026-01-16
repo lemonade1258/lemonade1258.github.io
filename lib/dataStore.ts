@@ -4,6 +4,9 @@ const API_BASE_URL = "http://59.110.163.47:5000/api";
 const CACHE_PREFIX = "clair_cache_v5_";
 const CACHE_TTL = 30 * 1000;
 
+// 获取当前存储的 Token
+const getAuthToken = () => localStorage.getItem("admin_token");
+
 const getCache = (key: string) => {
   try {
     const item = localStorage.getItem(CACHE_PREFIX + key);
@@ -39,7 +42,7 @@ async function apiCall<T>(
   method: string = "GET",
   body?: any
 ): Promise<T> {
-  const token = localStorage.getItem("admin_token");
+  const token = getAuthToken();
   const isAdmin = !!token;
   const isRead = method === "GET";
 
@@ -66,6 +69,12 @@ async function apiCall<T>(
       body: body ? JSON.stringify(body) : undefined,
     });
 
+    if (response.status === 403) {
+      // 如果是 403 权限错误，尝试清除本地失效 Token
+      localStorage.removeItem("admin_token");
+      throw new Error("您的登录已过期或无权操作，请尝试重新登录 (Forbidden)");
+    }
+
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       throw new Error(errData.message || `HTTP ${response.status}`);
@@ -90,15 +99,33 @@ export const loginAdmin = async (username: string, password: string) => {
   return await res.json();
 };
 
+/**
+ * 文件上传 - 修复了 Token 发送逻辑
+ */
 export const uploadFile = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
-  const token = localStorage.getItem("admin_token");
+
+  const token = getAuthToken();
+  if (!token) throw new Error("未检测到登录凭证，请先登录后台。");
+
   const res = await fetch(`${API_BASE_URL}/upload`, {
     method: "POST",
-    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: {
+      // 注意：FormData 上传时不要手动设置 Content-Type，浏览器会自动处理边界
+      Authorization: `Bearer ${token}`,
+    },
     body: formData,
   });
+
+  if (res.status === 403)
+    throw new Error("上传权限被拒绝 (Forbidden)。请检查登录状态。");
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || "上传文件失败");
+  }
+
   const data = await res.json();
   return data.url;
 };
