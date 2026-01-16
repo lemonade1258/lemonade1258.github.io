@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   fetchPeople,
   createPerson,
@@ -9,7 +9,6 @@ import {
 } from "../../lib/dataStore";
 import { Person, PersonCategory } from "../../types";
 import {
-  Search,
   Plus,
   Trash2,
   Edit2,
@@ -21,15 +20,14 @@ import {
   ZoomIn,
   ZoomOut,
   Move,
-  Camera,
   Crop,
   Loader2,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 /**
- * 核心图片裁剪组件
- * 专门处理 OSS 远程图片的跨域加载与缩放
+ * 旗舰版图片编辑器
+ * 解决跨域、偏移、卡顿三大问题
  */
 const ImageCropperModal: React.FC<{
   imageSrc: string;
@@ -41,63 +39,95 @@ const ImageCropperModal: React.FC<{
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const [loadError, setLoadError] = useState(false);
+  const [imgStatus, setImgStatus] = useState<"loading" | "loaded" | "error">(
+    "loading"
+  );
+
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // 这里的 timestamp 是为了绕过浏览器缓存，防止 CORS 跨域验证失效
-  const [processedSrc] = useState(() => {
+  // 1. 强制 CORS 加载逻辑
+  const [safeSrc] = useState(() => {
     if (!imageSrc) return "";
     if (imageSrc.startsWith("data:")) return imageSrc;
+    // 增加 v 参数确保不命中无 CORS 头的旧缓存
     const connector = imageSrc.includes("?") ? "&" : "?";
-    return `${imageSrc}${connector}t=${Date.now()}`;
+    return `${imageSrc}${connector}cors_v=${Date.now()}`;
   });
 
+  // 2. 滚轮缩放逻辑
+  const handleWheel = (e: React.WheelEvent) => {
+    if (imgStatus !== "loaded") return;
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    setZoom((prev) => Math.min(Math.max(prev + delta, 0.05), 8));
+  };
+
+  // 3. 丝滑拖拽逻辑
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (imgStatus !== "loaded") return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setOffset({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
-  };
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
+      setOffset({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    },
+    [isDragging, dragStart]
+  );
 
-  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseUp = useCallback(() => setIsDragging(false), []);
 
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    } else {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // 4. 精确 Canvas 导出逻辑 (核心修复偏移)
   const handleConfirm = () => {
-    if (!imageRef.current || !containerRef.current) return;
+    if (!imageRef.current || imgStatus !== "loaded") return;
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // 导出统一为 600x600 的正方形图片
-    const outputSize = 600;
+    const outputSize = 600; // 最终导出的像素尺寸
+    const uiCropSize = 320; // UI 界面中裁剪框的尺寸
+    const ratio = outputSize / uiCropSize; // UI 到 Canvas 的缩放比
+
     canvas.width = outputSize;
     canvas.height = outputSize;
 
-    const img = imageRef.current;
-    const uiCropSize = 320;
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+    // 清除画布
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, outputSize, outputSize);
 
+    // 核心坐标映射
+    // 1. 将原点移至画布中心
     ctx.translate(outputSize / 2, outputSize / 2);
-    ctx.scale(
-      (outputSize / uiCropSize) * zoom,
-      (outputSize / uiCropSize) * zoom
-    );
-    ctx.translate(offset.x / zoom, offset.y / zoom);
+    // 2. 应用用户在 UI 上的偏移（乘以缩放比）
+    ctx.translate(offset.x * ratio, offset.y * ratio);
+    // 3. 应用用户在 UI 上的缩放（乘以缩放比）
+    ctx.scale(zoom * ratio, zoom * ratio);
 
     try {
+      const img = imageRef.current;
+      // 4. 居中绘制原始图片
       ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
       canvas.toBlob(
         (blob) => {
           if (blob) onConfirm(blob);
@@ -106,26 +136,22 @@ const ImageCropperModal: React.FC<{
         0.95
       );
     } catch (e) {
-      console.error("Canvas Security Error:", e);
       alert(
-        "操作受限：该图片所在的服务器(OSS)未允许当前域名的跨域访问。请在 OSS 后台配置 CORS 规则。"
+        "由于 OSS 未正确配置 CORS 跨域权限，无法进行像素级裁剪。请联系管理员配置或上传本地图片。"
       );
       onCancel();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-2xl flex items-center justify-center p-4">
       <div className="w-full max-w-3xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
+        {/* Header */}
         <div className="p-8 border-b flex justify-between items-center bg-slate-50/50">
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">
-              调整照片展示效果
-            </h3>
+            <h3 className="text-2xl font-bold text-slate-800">调整展示图片</h3>
             <p className="text-sm text-slate-400 mt-1">
-              {isCircle
-                ? "【圆形展示模式】请确保面部居中"
-                : "【方形展示模式】请调整构图位置"}
+              支持滚轮缩放与鼠标拖拽 · 已适配{isCircle ? "圆形" : "方形"}预览
             </p>
           </div>
           <button
@@ -136,77 +162,71 @@ const ImageCropperModal: React.FC<{
           </button>
         </div>
 
+        {/* Viewport */}
         <div
-          className="bg-slate-200 relative h-[500px] overflow-hidden cursor-move touch-none flex items-center justify-center"
           ref={containerRef}
+          onWheel={handleWheel}
           onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
+          className="bg-slate-900 relative h-[500px] overflow-hidden cursor-move touch-none flex items-center justify-center"
         >
-          {!imgLoaded && !loadError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 gap-4 bg-slate-100 z-10">
-              <Loader2 className="animate-spin text-brand-red" size={40} />
-              <span className="text-xs font-bold uppercase tracking-widest animate-pulse">
-                正在从 OSS 载入原始照片...
+          {imgStatus === "loading" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-4 z-20">
+              <Loader2 className="animate-spin text-brand-red" size={48} />
+              <span className="text-xs font-bold uppercase tracking-[0.2em] animate-pulse">
+                正在获取原始数据...
               </span>
             </div>
           )}
 
-          {loadError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-red-500 gap-4 bg-red-50 z-20 px-10 text-center">
-              <AlertTriangle size={48} />
-              <p className="font-bold">图片加载失败</p>
-              <p className="text-xs text-red-400">
-                可能是由于 OSS
-                跨域配置不正确，或者图片链接已失效。请尝试重新上传本地文件。
-              </p>
+          {imgStatus === "error" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-red-500 gap-4 z-30 bg-red-50/10 px-12 text-center">
+              <AlertTriangle size={60} strokeWidth={1.5} />
+              <div className="space-y-2">
+                <p className="font-bold text-lg">图片加载失败 (CORS)</p>
+                <p className="text-sm opacity-70 leading-relaxed">
+                  浏览器出于安全考虑拦截了远程图片操作。请确保 OSS
+                  配置了跨域访问策略，或尝试“上传本地照片”。
+                </p>
+              </div>
               <button
                 onClick={onCancel}
-                className="mt-4 px-6 py-2 bg-white border border-red-200 rounded-xl text-sm font-bold shadow-sm"
+                className="mt-4 px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-white font-bold transition-all"
               >
-                返回
+                返回并上传本地文件
               </button>
             </div>
           )}
 
           <img
             ref={imageRef}
-            crossOrigin="anonymous"
-            src={processedSrc}
+            crossOrigin="anonymous" // 关键：必须在 src 之前
+            src={safeSrc}
             alt="Original"
+            onLoad={() => setImgStatus("loaded")}
+            onError={() => setImgStatus("error")}
             draggable={false}
-            onLoad={() => {
-              console.log("Cropper image loaded successfully");
-              setImgLoaded(true);
-            }}
-            onError={() => {
-              console.error("Failed to load image for cropping");
-              setLoadError(true);
-            }}
-            className={`absolute select-none pointer-events-none transition-opacity duration-700 ${
-              imgLoaded ? "opacity-100" : "opacity-0"
+            className={`absolute select-none pointer-events-none transition-opacity duration-1000 ${
+              imgStatus === "loaded" ? "opacity-100" : "opacity-0"
             }`}
             style={{
               left: "50%",
               top: "50%",
-              transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+              // 使用 translate3d 提高渲染性能
+              transform: `translate3d(-50%, -50%, 0) translate3d(${offset.x}px, ${offset.y}px, 0) scale(${zoom})`,
               transformOrigin: "center",
             }}
           />
 
-          {/* 实时形状蒙版：直接决定最终成片视觉效果 */}
+          {/* Mask Overlay */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div
-              className={`w-[320px] h-[320px] border-4 border-white/80 shadow-[0_0_0_9999px_rgba(15,23,42,0.85)] relative transition-all duration-700 ${
-                isCircle ? "rounded-full" : "rounded-none"
+              className={`w-[320px] h-[320px] border-[3px] border-white/80 shadow-[0_0_0_2000px_rgba(15,23,42,0.85)] relative transition-all duration-700 ${
+                isCircle ? "rounded-full" : "rounded-2xl"
               }`}
             >
-              {/* 辅助网格线：仅在非圆形时更明显 */}
+              {/* 辅助线 */}
               <div
-                className={`absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20 transition-opacity ${
-                  isCircle ? "opacity-10" : "opacity-20"
-                }`}
+                className={`absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-10 transition-opacity`}
               >
                 <div className="border-r border-white"></div>
                 <div className="border-r border-white"></div>
@@ -216,60 +236,69 @@ const ImageCropperModal: React.FC<{
               </div>
 
               {!isCircle && (
-                <div className="absolute inset-0 border border-brand-red/30">
-                  <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-brand-red"></div>
-                  <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-brand-red"></div>
-                  <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-brand-red"></div>
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-brand-red"></div>
+                <div className="absolute inset-0 border border-brand-red/40 rounded-2xl">
+                  <div className="absolute -top-1.5 -left-1.5 w-10 h-10 border-t-4 border-l-4 border-brand-red"></div>
+                  <div className="absolute -top-1.5 -right-1.5 w-10 h-10 border-t-4 border-r-4 border-brand-red"></div>
+                  <div className="absolute -bottom-1.5 -left-1.5 w-10 h-10 border-b-4 border-l-4 border-brand-red"></div>
+                  <div className="absolute -bottom-1.5 -right-1.5 w-10 h-10 border-b-4 border-r-4 border-brand-red"></div>
                 </div>
+              )}
+              {isCircle && (
+                <div className="absolute inset-0 border-2 border-brand-red/30 rounded-full"></div>
               )}
             </div>
           </div>
         </div>
 
+        {/* Footer / Controls */}
         <div className="p-10 bg-white">
-          <div className="flex items-center gap-8 mb-10">
+          <div className="flex items-center gap-10 mb-10">
             <ZoomOut size={24} className="text-slate-300" />
             <div className="flex-grow relative h-3 bg-slate-100 rounded-full">
               <input
                 type="range"
-                min="0.1"
-                max="5"
+                min="0.05"
+                max="8"
                 step="0.01"
                 value={zoom}
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               <div
-                className="absolute top-0 bottom-0 left-0 bg-brand-red rounded-full transition-all"
-                style={{ width: `${(zoom / 5) * 100}%` }}
+                className="absolute top-0 bottom-0 left-0 bg-brand-red rounded-full transition-all duration-150"
+                style={{ width: `${(zoom / 8) * 100}%` }}
               ></div>
               <div
-                className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white border-4 border-brand-red rounded-full shadow-xl pointer-events-none transition-all"
-                style={{ left: `calc(${(zoom / 5) * 100}% - 14px)` }}
+                className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white border-4 border-brand-red rounded-full shadow-2xl pointer-events-none transition-all duration-150"
+                style={{ left: `calc(${(zoom / 8) * 100}% - 16px)` }}
               ></div>
             </div>
             <ZoomIn size={24} className="text-slate-300" />
           </div>
 
-          <div className="flex justify-end gap-5">
-            <button
-              onClick={onCancel}
-              className="px-10 py-4 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition-all"
-            >
-              取消更改
-            </button>
-            <button
-              onClick={handleConfirm}
-              disabled={!imgLoaded}
-              className={`px-16 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 flex items-center gap-3 ${
-                !imgLoaded
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-red-700 hover:shadow-red-900/20"
-              }`}
-            >
-              <Save size={20} /> 提交此裁剪并同步至 OSS
-            </button>
+          <div className="flex justify-between items-center">
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
+              <Move size={14} /> 可使用鼠标滚轮或手势进行缩放
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={onCancel}
+                className="px-10 py-4 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition-all"
+              >
+                放弃修改
+              </button>
+              <button
+                onClick={handleConfirm}
+                disabled={imgStatus !== "loaded"}
+                className={`px-16 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 flex items-center gap-3 ${
+                  imgStatus !== "loaded"
+                    ? "opacity-50 grayscale cursor-not-allowed"
+                    : "hover:bg-red-700 hover:shadow-red-900/30"
+                }`}
+              >
+                <Save size={20} /> 同步并保存档案
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -286,7 +315,6 @@ const PeopleManager: React.FC = () => {
   const [editingItem, setEditingItem] = useState<Partial<Person>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
@@ -300,7 +328,7 @@ const PeopleManager: React.FC = () => {
       setPeople(data);
       setFiltered(data);
     } catch (e: any) {
-      setErrorMsg(e.message || "Failed to fetch data");
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -352,7 +380,7 @@ const PeopleManager: React.FC = () => {
       setEditingItem({});
       refreshData();
     } catch (err: any) {
-      alert(`数据库同步失败: ${err.message}`);
+      alert(`保存失败: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -366,7 +394,6 @@ const PeopleManager: React.FC = () => {
       };
       reader.readAsDataURL(e.target.files[0]);
     }
-    // 重置 input 以允许再次选择同一文件
     e.target.value = "";
   };
 
@@ -374,7 +401,7 @@ const PeopleManager: React.FC = () => {
     if (editingItem.avatar && !editingItem.avatar.includes("ui-avatars.com")) {
       setCropSrc(editingItem.avatar);
     } else {
-      alert("当前没有可编辑的原始图片资源，请上传新照片。");
+      alert("该成员目前使用默认头像，请先通过本地上传一张照片。");
     }
   };
 
@@ -388,7 +415,7 @@ const PeopleManager: React.FC = () => {
       setEditingItem((prev) => ({ ...prev, avatar: url }));
       setCropSrc(null);
     } catch (err) {
-      alert("上传 OSS 失败，请检查 OSS 后台 CORS 配置。");
+      alert("上传失败：请检查网络连接或 OSS 存储空间配置。");
     } finally {
       setIsUploading(false);
     }
@@ -452,7 +479,7 @@ const PeopleManager: React.FC = () => {
             onClick={() => exportToCSV(filtered, "people.csv")}
             className="px-4 py-2 border rounded hover:bg-slate-50 flex items-center transition-colors font-medium text-slate-600"
           >
-            <Download size={16} className="mr-2" /> 导出数据
+            <Download size={16} className="mr-2" /> 导出 CSV
           </button>
           <button
             onClick={() => openModal()}
@@ -494,13 +521,13 @@ const PeopleManager: React.FC = () => {
           {filtered.map((person) => (
             <div
               key={person.id}
-              className="border border-slate-100 rounded-3xl p-6 flex gap-6 items-center relative group bg-white hover:shadow-2xl hover:border-brand-red/10 transition-all duration-500"
+              className="border border-slate-100 rounded-[2rem] p-6 flex gap-6 items-center relative group bg-white hover:shadow-2xl hover:border-brand-red/10 transition-all duration-500"
             >
               <div
                 className={`w-16 h-16 overflow-hidden bg-slate-100 ring-4 ring-slate-50 shrink-0 transition-all duration-500 group-hover:scale-110 ${
                   isCircleCategory(person.category)
                     ? "rounded-full"
-                    : "rounded-xl"
+                    : "rounded-2xl"
                 }`}
               >
                 <img
@@ -529,7 +556,7 @@ const PeopleManager: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm("确定永久删除该成员？"))
+                    if (confirm("确定删除?"))
                       deletePerson(person.id).then(refreshData);
                   }}
                   className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
@@ -542,13 +569,13 @@ const PeopleManager: React.FC = () => {
         </div>
       </div>
 
-      {/* 成员档案弹窗 */}
+      {/* Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-md p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl animate-fade-in-up">
             <div className="flex justify-between items-center p-10 border-b shrink-0 bg-slate-50/30">
               <h3 className="text-3xl font-serif font-bold text-slate-800">
-                {editingItem.id ? "编辑成员档案" : "录入新成员"}
+                {editingItem.id ? "编辑成员" : "新增成员"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -586,7 +613,7 @@ const PeopleManager: React.FC = () => {
                   <div className="flex flex-col gap-4 w-full">
                     <label className="cursor-pointer group">
                       <div className="px-6 py-3 bg-brand-red text-white text-sm font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-red-700 transition-all shadow-lg active:scale-95">
-                        <Upload size={18} /> 选择本地照片并裁剪
+                        <Upload size={18} /> 上传新照片
                       </div>
                       <input
                         type="file"
@@ -600,7 +627,7 @@ const PeopleManager: React.FC = () => {
                       onClick={handleEditExistingPhoto}
                       className="px-6 py-3 bg-slate-900 text-white text-sm font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-brand-dark transition-all shadow-lg active:scale-95"
                     >
-                      <Crop size={18} /> 编辑/缩放当前照片
+                      <Crop size={18} /> 编辑当前照片
                     </button>
                   </div>
                 </div>
@@ -701,11 +728,10 @@ const PeopleManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* 联系方式 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-12 border-t-2 border-slate-50">
                 <div className="space-y-3">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
-                    Email / 官方邮箱
+                    Email
                   </label>
                   <input
                     value={editingItem.email || ""}
@@ -718,7 +744,7 @@ const PeopleManager: React.FC = () => {
                 </div>
                 <div className="space-y-3">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">
-                    Personal Homepage / 个人主页
+                    Homepage
                   </label>
                   <input
                     value={editingItem.homepage || ""}
@@ -729,7 +755,7 @@ const PeopleManager: React.FC = () => {
                       })
                     }
                     className="w-full p-5 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none transition-colors"
-                    placeholder="https://scholar.google.com/..."
+                    placeholder="https://..."
                   />
                 </div>
               </div>
@@ -744,16 +770,16 @@ const PeopleManager: React.FC = () => {
               </button>
               <button
                 onClick={handleSave}
-                className="px-20 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-2xl shadow-red-900/10 hover:bg-red-700 transition-all active:scale-95"
+                className="px-20 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-2xl hover:bg-red-700 transition-all active:scale-95"
               >
-                提交并更新数据库
+                完成保存
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 图片编辑器 */}
+      {/* Image Cropper Overlay */}
       {cropSrc && (
         <ImageCropperModal
           imageSrc={cropSrc}
