@@ -69,10 +69,10 @@ async function apiCall<T>(
       body: body ? JSON.stringify(body) : undefined,
     });
 
+    // 全局权限拦截
     if (response.status === 403) {
-      // 如果是 403 权限错误，尝试清除本地失效 Token
       localStorage.removeItem("admin_token");
-      throw new Error("您的登录已过期或无权操作，请尝试重新登录 (Forbidden)");
+      throw new Error("AUTH_FORBIDDEN");
     }
 
     if (!response.ok) {
@@ -100,26 +100,24 @@ export const loginAdmin = async (username: string, password: string) => {
 };
 
 /**
- * 文件上传 - 修复了 Token 发送逻辑
+ * 文件上传：确保 Token 始终被正确读取
  */
 export const uploadFile = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
 
   const token = getAuthToken();
-  if (!token) throw new Error("未检测到登录凭证，请先登录后台。");
+  if (!token) throw new Error("AUTH_FORBIDDEN");
 
   const res = await fetch(`${API_BASE_URL}/upload`, {
     method: "POST",
     headers: {
-      // 注意：FormData 上传时不要手动设置 Content-Type，浏览器会自动处理边界
       Authorization: `Bearer ${token}`,
     },
     body: formData,
   });
 
-  if (res.status === 403)
-    throw new Error("上传权限被拒绝 (Forbidden)。请检查登录状态。");
+  if (res.status === 403) throw new Error("AUTH_FORBIDDEN");
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));

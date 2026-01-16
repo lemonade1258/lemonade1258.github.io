@@ -28,8 +28,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 
 /**
- * 终极精准裁切器
- * 采用物理比例映射，解决所有缩放不对应和偏移问题
+ * 旗舰版图片裁剪器 (绝对坐标物理对齐版)
  */
 const ImageCropperModal: React.FC<{
   imageSrc: string;
@@ -52,40 +51,35 @@ const ImageCropperModal: React.FC<{
   const EXPORT_SIZE = 600;
   const RATIO = EXPORT_SIZE / UI_BOX_SIZE;
 
-  const [safeSrc] = useState(() => {
-    if (!imageSrc) return "";
-    if (imageSrc.startsWith("data:")) return imageSrc;
-    return `${imageSrc}${
-      imageSrc.includes("?") ? "&" : "?"
-    }v_crop=${Date.now()}`;
-  });
-
+  // 1. 同步视觉更新
   const updateVisuals = useCallback(() => {
     if (!imgDisplayRef.current) return;
     const { x, y } = offsetRef.current;
     const z = zoomRef.current;
+    // 使用 translate3d 配合物理坐标映射
     imgDisplayRef.current.style.transform = `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, 0) scale(${z})`;
   }, []);
 
+  // 2. 初始自适应：确保图片覆盖 320px 的框
   const handleAutoFit = useCallback(() => {
     if (!imgDisplayRef.current) return;
     const img = imgDisplayRef.current;
-    const scale =
-      Math.max(
-        UI_BOX_SIZE / img.naturalWidth,
-        UI_BOX_SIZE / img.naturalHeight
-      ) * 1.0;
+    const scale = Math.max(
+      UI_BOX_SIZE / img.naturalWidth,
+      UI_BOX_SIZE / img.naturalHeight
+    );
     zoomRef.current = scale;
     offsetRef.current = { x: 0, y: 0 };
     setZoom(scale);
     updateVisuals();
   }, [updateVisuals]);
 
+  // 3. 滚轮控制
   const handleWheel = (e: React.WheelEvent) => {
     if (imgStatus !== "loaded") return;
     e.preventDefault();
-    const factor = e.deltaY > 0 ? 0.94 : 1.06;
-    const nextZoom = Math.min(Math.max(zoomRef.current * factor, 0.001), 20);
+    const factor = e.deltaY > 0 ? 0.95 : 1.05;
+    const nextZoom = Math.min(Math.max(zoomRef.current * factor, 0.001), 10);
     zoomRef.current = nextZoom;
     setZoom(nextZoom);
     updateVisuals();
@@ -125,6 +119,7 @@ const ImageCropperModal: React.FC<{
     };
   }, [updateVisuals]);
 
+  // 4. 绝对坐标导出算法 (核心修复)
   const handleConfirm = () => {
     const img = imageRef.current;
     if (!img || imgStatus !== "loaded") return;
@@ -136,20 +131,31 @@ const ImageCropperModal: React.FC<{
     canvas.width = EXPORT_SIZE;
     canvas.height = EXPORT_SIZE;
 
+    // 填充底色
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE);
 
-    // 绘制算法核心：
-    // 1. 移动中心
-    ctx.translate(EXPORT_SIZE / 2, EXPORT_SIZE / 2);
-    // 2. 应用预览时的物理位移投影
-    ctx.translate(offsetRef.current.x * RATIO, offsetRef.current.y * RATIO);
-    // 3. 应用缩放 (zoomRef 是相对于 natural 尺寸的，因此这里需要配合 RATIO 来确保 UI 视野一致)
-    // 缩放本身是倍数，由于我们预览时也是 scale(zoom)，Canvas 里直接 scale(zoom * RATIO) 即可对齐 600px 画布
-    ctx.scale(zoomRef.current * RATIO, zoomRef.current * RATIO);
+    // 关键：不使用 ctx.scale 这种容易产生舍入误差的方式
+    // 而是直接计算在 600px 空间下图片的绝对绘制位置和大小
+
+    // a. 计算缩放后的物理尺寸 (UI 缩放 * 物理倍率 1.875)
+    const drawWidth = img.naturalWidth * zoomRef.current * RATIO;
+    const drawHeight = img.naturalHeight * zoomRef.current * RATIO;
+
+    // b. 计算图片中心在 600px 画布中的绝对偏移
+    const canvasCenterX = EXPORT_SIZE / 2 + offsetRef.current.x * RATIO;
+    const canvasCenterY = EXPORT_SIZE / 2 + offsetRef.current.y * RATIO;
 
     try {
-      ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+      // c. 使用 9 参数 drawImage 形式精确控制每一个像素
+      ctx.drawImage(
+        img,
+        canvasCenterX - drawWidth / 2,
+        canvasCenterY - drawHeight / 2,
+        drawWidth,
+        drawHeight
+      );
+
       canvas.toBlob(
         (blob) => {
           if (blob) onConfirm(blob);
@@ -158,35 +164,27 @@ const ImageCropperModal: React.FC<{
         0.95
       );
     } catch (e) {
-      alert("图片受限 (CORS)，请上传本地照片。");
+      alert("CORS 限制：无法读取服务器图片像素。请尝试上传本地照片。");
       onCancel();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-2xl flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-3xl flex items-center justify-center p-4">
       <div className="w-full max-w-3xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
         <div className="p-8 border-b flex justify-between items-center bg-slate-50/50">
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">调整照片</h3>
+            <h3 className="text-2xl font-bold text-slate-800">照片精准裁剪</h3>
             <p className="text-sm text-slate-400 mt-1">
-              当前倍率: {zoom.toFixed(3)}x · 导出像素: {EXPORT_SIZE}px
+              绝对映射模式 (600px) · 倍率: {zoom.toFixed(4)}x
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleAutoFit}
-              className="p-3 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
-            >
-              <RefreshCcw size={24} />
-            </button>
-            <button
-              onClick={onCancel}
-              className="p-3 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
-            >
-              <X size={28} />
-            </button>
-          </div>
+          <button
+            onClick={onCancel}
+            className="p-3 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
+          >
+            <X size={28} />
+          </button>
         </div>
 
         <div
@@ -201,7 +199,7 @@ const ImageCropperModal: React.FC<{
           <img
             ref={imgDisplayRef}
             crossOrigin="anonymous"
-            src={safeSrc}
+            src={imageSrc}
             onLoad={() => {
               setImgStatus("loaded");
               handleAutoFit();
@@ -215,12 +213,11 @@ const ImageCropperModal: React.FC<{
               left: "50%",
               top: "50%",
               transform: `translate3d(-50%, -50%, 0) scale(1)`,
-              transformOrigin: "center",
             }}
           />
           <img
             ref={imageRef}
-            src={safeSrc}
+            src={imageSrc}
             crossOrigin="anonymous"
             className="hidden"
           />
@@ -235,7 +232,7 @@ const ImageCropperModal: React.FC<{
         </div>
 
         <div className="p-10 bg-white flex justify-between items-center">
-          <div className="flex-grow max-w-sm mr-10">
+          <div className="flex-grow max-w-xs mr-10">
             <input
               type="range"
               min="0.001"
@@ -248,13 +245,13 @@ const ImageCropperModal: React.FC<{
                 setZoom(val);
                 updateVisuals();
               }}
-              className="w-full accent-brand-red"
+              className="w-full h-2 bg-slate-100 rounded-full appearance-none accent-brand-red cursor-pointer"
             />
           </div>
           <div className="flex gap-4">
             <button
               onClick={onCancel}
-              className="px-8 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-all"
+              className="px-8 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl"
             >
               取消
             </button>
@@ -263,7 +260,7 @@ const ImageCropperModal: React.FC<{
               disabled={imgStatus !== "loaded"}
               className="px-12 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 active:scale-95 transition-all"
             >
-              保存裁切
+              确认并上传
             </button>
           </div>
         </div>
@@ -273,7 +270,6 @@ const ImageCropperModal: React.FC<{
 };
 
 const PeopleManager: React.FC = () => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const [people, setPeople] = useState<Person[]>([]);
   const [filtered, setFiltered] = useState<Person[]>([]);
@@ -284,8 +280,15 @@ const PeopleManager: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
 
   const [cropSrc, setCropSrc] = useState<string | null>(null);
-  const [researchInput, setResearchInput] = useState("");
-  const [researchInputZh, setResearchInputZh] = useState("");
+
+  const handleError = (err: any) => {
+    if (err.message === "AUTH_FORBIDDEN") {
+      alert("登录已过期，请重新登录。");
+      navigate("/admin/login");
+    } else {
+      alert(`操作失败: ${err.message}`);
+    }
+  };
 
   const refreshData = async () => {
     setIsLoading(true);
@@ -293,7 +296,7 @@ const PeopleManager: React.FC = () => {
       const data = await fetchPeople();
       setPeople(data);
     } catch (e: any) {
-      if (e.message.includes("Forbidden")) navigate("/admin/login");
+      handleError(e);
     } finally {
       setIsLoading(false);
     }
@@ -312,29 +315,11 @@ const PeopleManager: React.FC = () => {
   }, [people, activeCategory]);
 
   const handleSave = async () => {
-    let newItem = { ...editingItem } as Person;
-    if (
-      newItem.category === "Teachers" ||
-      newItem.category === "Visiting Scholars"
-    ) {
-      if (!newItem.teacherProfile)
-        newItem.teacherProfile = {
-          position: "",
-          researchAreas: [],
-          achievements: [],
-          projects: [],
-        };
-      newItem.teacherProfile.researchAreas = researchInput
-        .split("\n")
-        .filter((s) => s.trim());
-      newItem.teacherProfile.researchAreasZh = researchInputZh
-        .split("\n")
-        .filter((s) => s.trim());
-    }
+    if (isUploading) return alert("正在同步照片，请稍候...");
 
+    let newItem = { ...editingItem } as Person;
     setIsLoading(true);
     try {
-      if (!newItem.id) newItem.id = Date.now().toString();
       if (editingItem.id) {
         await updatePerson(newItem);
       } else {
@@ -342,14 +327,9 @@ const PeopleManager: React.FC = () => {
       }
       setIsModalOpen(false);
       refreshData();
-      alert("成员信息已更新");
+      alert("成员信息已保存");
     } catch (err: any) {
-      if (err.message.includes("Forbidden")) {
-        alert("登录权限已过期，请重新登录。");
-        navigate("/admin/login");
-      } else {
-        alert(`保存失败: ${err.message}`);
-      }
+      handleError(err);
     } finally {
       setIsLoading(false);
     }
@@ -374,38 +354,23 @@ const PeopleManager: React.FC = () => {
         type: "image/jpeg",
       });
       const url = await uploadFile(file);
-      // 成功上传后更新头像 URL
+      // 核心：上传完成后必须立即更新 editingItem
       setEditingItem((prev) => ({ ...prev, avatar: url }));
     } catch (err: any) {
-      if (err.message.includes("Forbidden")) {
-        alert("权限已失效，请先登录后台。");
-        navigate("/admin/login");
-      } else {
-        alert(`上传失败: ${err.message}`);
-      }
+      handleError(err);
     } finally {
       setIsUploading(false);
     }
   };
 
   const openModal = (item?: Person) => {
-    const freshItem: Partial<Person> = item || {
-      category: "Teachers",
-      order: 1,
-      avatar:
-        "https://ui-avatars.com/api/?name=User&background=f1f5f9&color=cbd5e1",
-      teacherProfile: {
-        position: "",
-        researchAreas: [],
-        achievements: [],
-        projects: [],
-        researchAreasZh: [],
-      },
-    };
-    setEditingItem(freshItem);
-    setResearchInput(freshItem.teacherProfile?.researchAreas?.join("\n") || "");
-    setResearchInputZh(
-      freshItem.teacherProfile?.researchAreasZh?.join("\n") || ""
+    setEditingItem(
+      item || {
+        category: "Teachers",
+        order: 1,
+        avatar:
+          "https://ui-avatars.com/api/?name=User&background=f1f5f9&color=cbd5e1",
+      }
     );
     setIsModalOpen(true);
   };
@@ -435,15 +400,13 @@ const PeopleManager: React.FC = () => {
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">团队管理</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => openModal()}
-            className="px-6 py-2 bg-brand-red text-white rounded-xl font-bold shadow-lg"
-          >
-            新增成员
-          </button>
-        </div>
+        <h2 className="text-2xl font-bold text-slate-800">团队成员管理</h2>
+        <button
+          onClick={() => openModal()}
+          className="px-6 py-2 bg-brand-red text-white rounded-xl font-bold shadow-lg"
+        >
+          新增成员
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8 border-b pb-4">
@@ -507,7 +470,9 @@ const PeopleManager: React.FC = () => {
                 <button
                   onClick={() => {
                     if (confirm("确定删除?"))
-                      deletePerson(person.id).then(refreshData);
+                      deletePerson(person.id)
+                        .then(refreshData)
+                        .catch(handleError);
                   }}
                   className="p-2 text-slate-400 hover:text-red-500"
                 >
@@ -524,7 +489,7 @@ const PeopleManager: React.FC = () => {
           <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl">
             <div className="flex justify-between items-center p-8 border-b bg-slate-50/30">
               <h3 className="text-2xl font-bold">
-                {editingItem.id ? "编辑档案" : "新增成员"}
+                {editingItem.id ? "修改档案" : "录入新成员"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -538,7 +503,7 @@ const PeopleManager: React.FC = () => {
               <div className="flex flex-col md:flex-row gap-12 items-start">
                 <div className="flex flex-col items-center gap-6 shrink-0">
                   <div
-                    className={`w-40 h-40 overflow-hidden border-4 border-white shadow-xl bg-slate-100 relative ${
+                    className={`w-44 h-44 overflow-hidden border-4 border-white shadow-xl bg-slate-100 relative ${
                       isCircleCategory(editingItem.category || "")
                         ? "rounded-full"
                         : "rounded-3xl"
@@ -549,17 +514,20 @@ const PeopleManager: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                     {isUploading && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-sm z-10">
                         <Loader2
-                          className="text-white animate-spin"
+                          className="text-white animate-spin mb-2"
                           size={32}
                         />
+                        <span className="text-white text-[10px] font-bold">
+                          同步中...
+                        </span>
                       </div>
                     )}
                   </div>
                   <div className="flex flex-col gap-2 w-full">
-                    <label className="cursor-pointer px-4 py-2 bg-brand-red text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2">
-                      <Upload size={14} /> 上传新照片
+                    <label className="cursor-pointer px-4 py-3 bg-brand-red text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-red-700">
+                      <Upload size={14} /> 上传并裁剪
                       <input
                         type="file"
                         className="hidden"
@@ -567,21 +535,13 @@ const PeopleManager: React.FC = () => {
                         onChange={handleFileChange}
                       />
                     </label>
-                    <button
-                      onClick={() =>
-                        editingItem.avatar && setCropSrc(editingItem.avatar)
-                      }
-                      className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2"
-                    >
-                      <Crop size={14} /> 裁切当前
-                    </button>
                   </div>
                 </div>
 
                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                   <div className="space-y-4">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      基本信息
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                      实验室分类
                     </label>
                     <select
                       value={editingItem.category}
@@ -591,7 +551,7 @@ const PeopleManager: React.FC = () => {
                           category: e.target.value as PersonCategory,
                         })
                       }
-                      className="w-full p-3 border rounded-xl text-sm outline-none"
+                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red"
                     >
                       {categories.map((c) => (
                         <option key={c} value={c}>
@@ -608,7 +568,7 @@ const PeopleManager: React.FC = () => {
                           nameZh: e.target.value,
                         })
                       }
-                      className="w-full p-3 border rounded-xl text-sm"
+                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
                     />
                     <input
                       placeholder="English Name"
@@ -616,12 +576,12 @@ const PeopleManager: React.FC = () => {
                       onChange={(e) =>
                         setEditingItem({ ...editingItem, name: e.target.value })
                       }
-                      className="w-full p-3 border rounded-xl text-sm"
+                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
                     />
                   </div>
                   <div className="space-y-4 pt-6">
                     <input
-                      placeholder="职位 (如: 博士生)"
+                      placeholder="职位 (如: 博士后)"
                       value={editingItem.titleZh || ""}
                       onChange={(e) =>
                         setEditingItem({
@@ -629,7 +589,7 @@ const PeopleManager: React.FC = () => {
                           titleZh: e.target.value,
                         })
                       }
-                      className="w-full p-3 border rounded-xl text-sm"
+                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
                     />
                     <input
                       placeholder="Email"
@@ -640,7 +600,7 @@ const PeopleManager: React.FC = () => {
                           email: e.target.value,
                         })
                       }
-                      className="w-full p-3 border rounded-xl text-sm"
+                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
                     />
                     <input
                       type="number"
@@ -652,7 +612,7 @@ const PeopleManager: React.FC = () => {
                           order: parseInt(e.target.value),
                         })
                       }
-                      className="w-full p-3 border rounded-xl text-sm"
+                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
                     />
                   </div>
                 </div>
@@ -662,15 +622,20 @@ const PeopleManager: React.FC = () => {
             <div className="p-8 border-t flex justify-end gap-4 bg-slate-50/50">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-8 py-3 text-slate-400 font-bold"
+                className="px-8 py-3 text-slate-400 font-bold hover:bg-slate-200 rounded-xl"
               >
                 取消
               </button>
               <button
                 onClick={handleSave}
-                className="px-12 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-all"
+                disabled={isUploading || isLoading}
+                className={`px-16 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl active:scale-95 transition-all ${
+                  isUploading || isLoading
+                    ? "opacity-50 grayscale cursor-wait"
+                    : "hover:bg-red-700"
+                }`}
               >
-                确认并保存
+                {isUploading ? "正在同步照片..." : "确认并永久保存"}
               </button>
             </div>
           </div>
