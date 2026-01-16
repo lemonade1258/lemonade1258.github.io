@@ -28,12 +28,12 @@ import {
 import { useLanguage } from "../../contexts/LanguageContext";
 
 /**
- * 增强型图片裁剪模态框
- * 解决圆/方冲突、跨域加载和缩放精度问题
+ * 核心图片裁剪组件
+ * 专门处理 OSS 远程图片的跨域加载与缩放
  */
 const ImageCropperModal: React.FC<{
   imageSrc: string;
-  isCircle: boolean; // 是否显示圆形裁剪引导
+  isCircle: boolean;
   onConfirm: (croppedBlob: Blob) => void;
   onCancel: () => void;
 }> = ({ imageSrc, isCircle, onConfirm, onCancel }) => {
@@ -42,13 +42,17 @@ const ImageCropperModal: React.FC<{
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // 为远程 URL 添加时间戳避免缓存导致的 CORS 失败
-  const processedSrc = imageSrc.startsWith("http")
-    ? `${imageSrc}${imageSrc.includes("?") ? "&" : "?"}v=${Date.now()}`
-    : imageSrc;
+  // 这里的 timestamp 是为了绕过浏览器缓存，防止 CORS 跨域验证失效
+  const [processedSrc] = useState(() => {
+    if (!imageSrc) return "";
+    if (imageSrc.startsWith("data:")) return imageSrc;
+    const connector = imageSrc.includes("?") ? "&" : "?";
+    return `${imageSrc}${connector}t=${Date.now()}`;
+  });
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -72,20 +76,19 @@ const ImageCropperModal: React.FC<{
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // 输出标准的 600x600 正方形头像（前台 CSS 会处理成圆或方）
+    // 导出统一为 600x600 的正方形图片
     const outputSize = 600;
     canvas.width = outputSize;
     canvas.height = outputSize;
 
     const img = imageRef.current;
-    const uiCropSize = 320; // UI 界面中裁剪框的大小
+    const uiCropSize = 320;
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, outputSize, outputSize);
 
-    // 计算映射
     ctx.translate(outputSize / 2, outputSize / 2);
     ctx.scale(
       (outputSize / uiCropSize) * zoom,
@@ -103,23 +106,26 @@ const ImageCropperModal: React.FC<{
         0.95
       );
     } catch (e) {
+      console.error("Canvas Security Error:", e);
       alert(
-        "由于浏览器安全限制（CORS），无法直接编辑此远程图片。请尝试重新上传本地文件。"
+        "操作受限：该图片所在的服务器(OSS)未允许当前域名的跨域访问。请在 OSS 后台配置 CORS 规则。"
       );
       onCancel();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/98 backdrop-blur-xl flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-3xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
+    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-3xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
         <div className="p-8 border-b flex justify-between items-center bg-slate-50/50">
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">调整展示照片</h3>
+            <h3 className="text-2xl font-bold text-slate-800">
+              调整照片展示效果
+            </h3>
             <p className="text-sm text-slate-400 mt-1">
               {isCircle
-                ? "当前类别使用圆形展示，请确保面部位于圆圈中心"
-                : "当前类别使用方形展示，请调整至合适位置"}
+                ? "【圆形展示模式】请确保面部居中"
+                : "【方形展示模式】请调整构图位置"}
             </p>
           </div>
           <button
@@ -138,23 +144,47 @@ const ImageCropperModal: React.FC<{
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {!imgLoaded && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-3">
-              <Loader2 className="animate-spin" size={32} />
-              <span className="text-xs font-bold uppercase tracking-widest">
-                正在载入远程原始图片...
+          {!imgLoaded && !loadError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 gap-4 bg-slate-100 z-10">
+              <Loader2 className="animate-spin text-brand-red" size={40} />
+              <span className="text-xs font-bold uppercase tracking-widest animate-pulse">
+                正在从 OSS 载入原始照片...
               </span>
+            </div>
+          )}
+
+          {loadError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-red-500 gap-4 bg-red-50 z-20 px-10 text-center">
+              <AlertTriangle size={48} />
+              <p className="font-bold">图片加载失败</p>
+              <p className="text-xs text-red-400">
+                可能是由于 OSS
+                跨域配置不正确，或者图片链接已失效。请尝试重新上传本地文件。
+              </p>
+              <button
+                onClick={onCancel}
+                className="mt-4 px-6 py-2 bg-white border border-red-200 rounded-xl text-sm font-bold shadow-sm"
+              >
+                返回
+              </button>
             </div>
           )}
 
           <img
             ref={imageRef}
-            src={processedSrc}
-            alt="To crop"
             crossOrigin="anonymous"
+            src={processedSrc}
+            alt="Original"
             draggable={false}
-            onLoad={() => setImgLoaded(true)}
-            className={`absolute select-none pointer-events-none transition-opacity duration-500 ${
+            onLoad={() => {
+              console.log("Cropper image loaded successfully");
+              setImgLoaded(true);
+            }}
+            onError={() => {
+              console.error("Failed to load image for cropping");
+              setLoadError(true);
+            }}
+            className={`absolute select-none pointer-events-none transition-opacity duration-700 ${
               imgLoaded ? "opacity-100" : "opacity-0"
             }`}
             style={{
@@ -165,16 +195,19 @@ const ImageCropperModal: React.FC<{
             }}
           />
 
-          {/* 交互遮罩层 */}
+          {/* 实时形状蒙版：直接决定最终成片视觉效果 */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            {/* 裁剪引导框：根据 isCircle 切换形状 */}
             <div
-              className={`w-[320px] h-[320px] border-4 border-white shadow-[0_0_0_9999px_rgba(15,23,42,0.8)] relative transition-all duration-500 ${
+              className={`w-[320px] h-[320px] border-4 border-white/80 shadow-[0_0_0_9999px_rgba(15,23,42,0.85)] relative transition-all duration-700 ${
                 isCircle ? "rounded-full" : "rounded-none"
               }`}
             >
-              {/* 辅助线 */}
-              <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20 pointer-events-none">
+              {/* 辅助网格线：仅在非圆形时更明显 */}
+              <div
+                className={`absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20 transition-opacity ${
+                  isCircle ? "opacity-10" : "opacity-20"
+                }`}
+              >
                 <div className="border-r border-white"></div>
                 <div className="border-r border-white"></div>
                 <div></div>
@@ -183,12 +216,12 @@ const ImageCropperModal: React.FC<{
               </div>
 
               {!isCircle && (
-                <>
+                <div className="absolute inset-0 border border-brand-red/30">
                   <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-brand-red"></div>
                   <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-brand-red"></div>
                   <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-brand-red"></div>
                   <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-brand-red"></div>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -197,10 +230,10 @@ const ImageCropperModal: React.FC<{
         <div className="p-10 bg-white">
           <div className="flex items-center gap-8 mb-10">
             <ZoomOut size={24} className="text-slate-300" />
-            <div className="flex-grow relative h-2 bg-slate-100 rounded-full">
+            <div className="flex-grow relative h-3 bg-slate-100 rounded-full">
               <input
                 type="range"
-                min="0.05"
+                min="0.1"
                 max="5"
                 step="0.01"
                 value={zoom}
@@ -208,12 +241,12 @@ const ImageCropperModal: React.FC<{
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               <div
-                className="absolute top-0 bottom-0 left-0 bg-brand-red rounded-full"
+                className="absolute top-0 bottom-0 left-0 bg-brand-red rounded-full transition-all"
                 style={{ width: `${(zoom / 5) * 100}%` }}
               ></div>
               <div
-                className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-4 border-brand-red rounded-full shadow-md pointer-events-none"
-                style={{ left: `calc(${(zoom / 5) * 100}% - 12px)` }}
+                className="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white border-4 border-brand-red rounded-full shadow-xl pointer-events-none transition-all"
+                style={{ left: `calc(${(zoom / 5) * 100}% - 14px)` }}
               ></div>
             </div>
             <ZoomIn size={24} className="text-slate-300" />
@@ -224,13 +257,18 @@ const ImageCropperModal: React.FC<{
               onClick={onCancel}
               className="px-10 py-4 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition-all"
             >
-              放弃修改
+              取消更改
             </button>
             <button
               onClick={handleConfirm}
-              className="px-16 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 hover:shadow-red-900/20 transition-all active:scale-95 flex items-center gap-3"
+              disabled={!imgLoaded}
+              className={`px-16 py-4 bg-brand-red text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 flex items-center gap-3 ${
+                !imgLoaded
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-red-700 hover:shadow-red-900/20"
+              }`}
             >
-              <Save size={20} /> 确认并保存至 OSS
+              <Save size={20} /> 提交此裁剪并同步至 OSS
             </button>
           </div>
         </div>
@@ -253,13 +291,7 @@ const PeopleManager: React.FC = () => {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const [researchInput, setResearchInput] = useState("");
-  const [achieveInput, setAchieveInput] = useState("");
-  const [projectInput, setProjectInput] = useState("");
-  const [influenceInput, setInfluenceInput] = useState("");
   const [researchInputZh, setResearchInputZh] = useState("");
-  const [achieveInputZh, setAchieveInputZh] = useState("");
-  const [projectInputZh, setProjectInputZh] = useState("");
-  const [influenceInputZh, setInfluenceInputZh] = useState("");
 
   const refreshData = async () => {
     setIsLoading(true);
@@ -303,25 +335,7 @@ const PeopleManager: React.FC = () => {
       newItem.teacherProfile.researchAreas = researchInput
         .split("\n")
         .filter((s) => s.trim());
-      newItem.teacherProfile.achievements = achieveInput
-        .split("\n")
-        .filter((s) => s.trim());
-      newItem.teacherProfile.projects = projectInput
-        .split("\n")
-        .filter((s) => s.trim());
-      newItem.teacherProfile.influence = influenceInput
-        .split("\n")
-        .filter((s) => s.trim());
       newItem.teacherProfile.researchAreasZh = researchInputZh
-        .split("\n")
-        .filter((s) => s.trim());
-      newItem.teacherProfile.achievementsZh = achieveInputZh
-        .split("\n")
-        .filter((s) => s.trim());
-      newItem.teacherProfile.projectsZh = projectInputZh
-        .split("\n")
-        .filter((s) => s.trim());
-      newItem.teacherProfile.influenceZh = influenceInputZh
         .split("\n")
         .filter((s) => s.trim());
     }
@@ -338,7 +352,7 @@ const PeopleManager: React.FC = () => {
       setEditingItem({});
       refreshData();
     } catch (err: any) {
-      alert(`保存失败: ${err.message}`);
+      alert(`数据库同步失败: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -352,13 +366,15 @@ const PeopleManager: React.FC = () => {
       };
       reader.readAsDataURL(e.target.files[0]);
     }
+    // 重置 input 以允许再次选择同一文件
+    e.target.value = "";
   };
 
   const handleEditExistingPhoto = () => {
     if (editingItem.avatar && !editingItem.avatar.includes("ui-avatars.com")) {
       setCropSrc(editingItem.avatar);
     } else {
-      alert("当前使用的是默认占位图，请通过“上传新照片”进行设置。");
+      alert("当前没有可编辑的原始图片资源，请上传新照片。");
     }
   };
 
@@ -372,7 +388,7 @@ const PeopleManager: React.FC = () => {
       setEditingItem((prev) => ({ ...prev, avatar: url }));
       setCropSrc(null);
     } catch (err) {
-      alert("上传至 OSS 失败，请检查网络或后端权限配置。");
+      alert("上传 OSS 失败，请检查 OSS 后台 CORS 配置。");
     } finally {
       setIsUploading(false);
     }
@@ -389,33 +405,15 @@ const PeopleManager: React.FC = () => {
         researchAreas: [],
         achievements: [],
         projects: [],
-        influence: [],
         researchAreasZh: [],
-        achievementsZh: [],
-        projectsZh: [],
-        influenceZh: [],
       },
     };
 
     setEditingItem(freshItem);
-    if (freshItem.teacherProfile) {
-      setResearchInput(
-        freshItem.teacherProfile.researchAreas?.join("\n") || ""
-      );
-      setAchieveInput(freshItem.teacherProfile.achievements?.join("\n") || "");
-      setProjectInput(freshItem.teacherProfile.projects?.join("\n") || "");
-      setInfluenceInput(freshItem.teacherProfile.influence?.join("\n") || "");
-      setResearchInputZh(
-        freshItem.teacherProfile.researchAreasZh?.join("\n") || ""
-      );
-      setAchieveInputZh(
-        freshItem.teacherProfile.achievementsZh?.join("\n") || ""
-      );
-      setProjectInputZh(freshItem.teacherProfile.projectsZh?.join("\n") || "");
-      setInfluenceInputZh(
-        freshItem.teacherProfile.influenceZh?.join("\n") || ""
-      );
-    }
+    setResearchInput(freshItem.teacherProfile?.researchAreas?.join("\n") || "");
+    setResearchInputZh(
+      freshItem.teacherProfile?.researchAreasZh?.join("\n") || ""
+    );
     setIsModalOpen(true);
   };
 
@@ -431,7 +429,6 @@ const PeopleManager: React.FC = () => {
     "Secretary",
   ];
 
-  // 判断是否应该展示圆形裁剪蒙版
   const isCircleCategory = (cat: string) => {
     return [
       "PhD",
@@ -492,12 +489,6 @@ const PeopleManager: React.FC = () => {
         ))}
       </div>
 
-      {isLoading && (
-        <div className="text-center py-20 animate-pulse text-slate-300 font-serif">
-          同步服务器成员记录...
-        </div>
-      )}
-
       <div className="flex-grow overflow-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filtered.map((person) => (
@@ -557,7 +548,7 @@ const PeopleManager: React.FC = () => {
           <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl animate-fade-in-up">
             <div className="flex justify-between items-center p-10 border-b shrink-0 bg-slate-50/30">
               <h3 className="text-3xl font-serif font-bold text-slate-800">
-                {editingItem.id ? "编辑档案" : "录入新成员"}
+                {editingItem.id ? "编辑成员档案" : "录入新成员"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -595,7 +586,7 @@ const PeopleManager: React.FC = () => {
                   <div className="flex flex-col gap-4 w-full">
                     <label className="cursor-pointer group">
                       <div className="px-6 py-3 bg-brand-red text-white text-sm font-bold rounded-2xl flex items-center justify-center gap-3 hover:bg-red-700 transition-all shadow-lg active:scale-95">
-                        <Upload size={18} /> 上传新照片并裁剪
+                        <Upload size={18} /> 选择本地照片并裁剪
                       </div>
                       <input
                         type="file"
@@ -742,81 +733,6 @@ const PeopleManager: React.FC = () => {
                   />
                 </div>
               </div>
-
-              {/* 针对导师/访问学者的详细表单 */}
-              {["Teachers", "Visiting Scholars"].includes(
-                editingItem.category as string
-              ) && (
-                <div className="space-y-10 pt-12 border-t-2 border-slate-50">
-                  <h4 className="text-lg font-serif font-bold text-brand-red flex items-center gap-4">
-                    <Plus size={20} /> 详细学术档案 (仅导师展示)
-                  </h4>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-slate-400 uppercase">
-                        学术头衔 (EN)
-                      </label>
-                      <input
-                        value={editingItem.teacherProfile?.position || ""}
-                        onChange={(e) =>
-                          setEditingItem({
-                            ...editingItem,
-                            teacherProfile: {
-                              ...editingItem.teacherProfile!,
-                              position: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-full p-5 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-slate-400 uppercase">
-                        学术头衔 (中文)
-                      </label>
-                      <input
-                        value={editingItem.teacherProfile?.positionZh || ""}
-                        onChange={(e) =>
-                          setEditingItem({
-                            ...editingItem,
-                            teacherProfile: {
-                              ...editingItem.teacherProfile!,
-                              positionZh: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-full p-5 border-2 border-slate-100 rounded-2xl bg-slate-50/50 text-sm focus:border-brand-red outline-none transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-slate-400 uppercase">
-                        研究领域 (EN) - 换行分隔
-                      </label>
-                      <textarea
-                        value={researchInput}
-                        onChange={(e) => setResearchInput(e.target.value)}
-                        className="w-full p-5 border-2 border-slate-100 rounded-2xl text-xs font-mono bg-slate-50 focus:border-brand-red outline-none transition-all leading-relaxed"
-                        rows={4}
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-slate-400 uppercase">
-                        研究领域 (中文) - 换行分隔
-                      </label>
-                      <textarea
-                        value={researchInputZh}
-                        onChange={(e) => setResearchInputZh(e.target.value)}
-                        className="w-full p-5 border-2 border-slate-100 rounded-2xl text-xs font-mono bg-slate-50 focus:border-brand-red outline-none transition-all leading-relaxed"
-                        rows={4}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="p-10 border-t shrink-0 flex justify-end gap-5 bg-slate-50/50 rounded-b-[3rem]">
