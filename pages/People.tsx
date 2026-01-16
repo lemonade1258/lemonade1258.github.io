@@ -10,7 +10,7 @@ import {
   Award,
   Briefcase,
   Star,
-  ArrowUpRight,
+  ArrowRight,
 } from "lucide-react";
 
 const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
@@ -50,9 +50,9 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
     : person.teacherProfile?.influence;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mb-10 animate-fade-in-up">
+    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mb-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row items-start">
-        <div className="w-full md:w-72 md:flex-shrink-0 bg-slate-50 relative group border-b md:border-b-0 md:border-r border-slate-100">
+        <div className="w-full md:w-64 md:flex-shrink-0 bg-slate-50 relative group border-b md:border-b-0 md:border-r border-slate-100">
           <div className="aspect-[3/4] w-full">
             <img
               src={person.avatar}
@@ -63,19 +63,17 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
           </div>
         </div>
 
-        <div className="p-8 md:p-10 flex-grow flex flex-col w-full min-w-0">
-          <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+        <div className="p-6 md:p-8 flex-grow flex flex-col w-full min-w-0">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
             <div>
-              <h3 className="text-3xl font-serif font-bold text-brand-dark mb-1.5 leading-tight">
+              <h3 className="text-2xl font-serif font-bold text-brand-dark mb-1 leading-tight">
                 {name}
               </h3>
-              <p className="text-brand-red font-semibold text-sm uppercase tracking-widest mb-2">
+              <p className="text-brand-red font-medium text-sm uppercase tracking-wide mb-2">
                 {title}
               </p>
               {position && (
-                <p className="text-slate-400 text-sm italic font-light">
-                  {position}
-                </p>
+                <p className="text-slate-500 text-sm italic">{position}</p>
               )}
             </div>
 
@@ -83,10 +81,10 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
               {person.email && (
                 <a
                   href={`mailto:${person.email}`}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:text-white hover:bg-brand-red transition-all duration-300"
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-white hover:bg-brand-red transition-colors"
                   title={t("common.email")}
                 >
-                  <Mail size={18} />
+                  <Mail size={16} />
                 </a>
               )}
               {person.homepage && (
@@ -94,33 +92,33 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
                   href={person.homepage}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:text-white hover:bg-brand-tech transition-all duration-300"
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-white hover:bg-brand-tech transition-colors"
                   title={t("common.website")}
                 >
-                  <Globe size={18} />
+                  <Globe size={16} />
                 </a>
               )}
             </div>
           </div>
 
           <div
-            className={`text-slate-600 leading-relaxed font-light mb-8 text-lg relative ${
-              expanded ? "" : "line-clamp-3"
+            className={`text-slate-600 leading-relaxed font-light mb-6 relative ${
+              expanded ? "" : "line-clamp-4 md:line-clamp-5"
             }`}
           >
             {bio}
           </div>
 
           {researchAreas && researchAreas.length > 0 && (
-            <div className="mb-8">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-3">
+            <div className="mb-6">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
                 {t("people.profile.research")}
               </h4>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 {researchAreas.map((area, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 bg-slate-50 text-slate-500 text-xs rounded-full border border-slate-100"
+                    className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs rounded border border-slate-200"
                   >
                     {area}
                   </span>
@@ -130,16 +128,16 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
           )}
 
           {expanded && person.teacherProfile && (
-            <div className="mt-2 pt-8 border-t border-slate-100 space-y-8 animate-fade-in origin-top">
+            <div className="mt-2 pt-6 border-t border-slate-100 space-y-6 animate-fade-in origin-top">
               {achievements && achievements.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-3 text-brand-dark font-medium">
-                    <Award size={18} className="text-brand-red" />
-                    <h4 className="text-base font-bold">
+                  <div className="flex items-center gap-2 mb-2 text-brand-dark font-medium">
+                    <Award size={16} className="text-brand-red" />
+                    <h4 className="text-sm font-bold">
                       {t("people.profile.achievements")}
                     </h4>
                   </div>
-                  <ul className="list-disc list-outside ml-6 text-sm text-slate-500 space-y-2 marker:text-slate-300 font-light">
+                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1.5 marker:text-slate-300">
                     {achievements.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -149,13 +147,13 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
 
               {projects && projects.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-3 text-brand-dark font-medium">
-                    <Briefcase size={18} className="text-brand-tech" />
-                    <h4 className="text-base font-bold">
+                  <div className="flex items-center gap-2 mb-2 text-brand-dark font-medium">
+                    <Briefcase size={16} className="text-brand-tech" />
+                    <h4 className="text-sm font-bold">
                       {t("people.profile.projects")}
                     </h4>
                   </div>
-                  <ul className="list-disc list-outside ml-6 text-sm text-slate-500 space-y-2 marker:text-slate-300 font-light">
+                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1.5 marker:text-slate-300">
                     {projects.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -165,13 +163,13 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
 
               {influence && influence.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-2 mb-3 text-brand-dark font-medium">
-                    <Star size={18} className="text-yellow-500" />
-                    <h4 className="text-base font-bold">
+                  <div className="flex items-center gap-2 mb-2 text-brand-dark font-medium">
+                    <Star size={16} className="text-yellow-500" />
+                    <h4 className="text-sm font-bold">
                       {t("people.profile.influence")}
                     </h4>
                   </div>
-                  <ul className="list-disc list-outside ml-6 text-sm text-slate-500 space-y-2 marker:text-slate-300 font-light">
+                  <ul className="list-disc list-outside ml-5 text-sm text-slate-600 space-y-1.5 marker:text-slate-300">
                     {influence.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -181,10 +179,10 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
             </div>
           )}
 
-          <div className="mt-auto pt-4">
+          <div className="mt-auto pt-2">
             <button
               onClick={() => setExpanded(!expanded)}
-              className="group flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-300 hover:text-brand-red transition-colors"
+              className="group flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-brand-red transition-colors"
             >
               {expanded ? (
                 <>
@@ -211,15 +209,12 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
   );
 };
 
-/**
- * Minimal Member Card for Students, RA, and Staff
- * Optimized for clarity and elegance by removing the bio section.
- */
 const CompactPersonCard: React.FC<{ person: Person }> = ({ person }) => {
   const { language } = useLanguage();
   const isZh = language === "zh";
   const name = isZh ? person.nameZh || person.name : person.name;
   const title = isZh ? person.titleZh || person.title : person.title;
+  const bio = isZh ? person.bioZh || person.bio : person.bio;
 
   const Wrapper = person.homepage ? "a" : "div";
   const props = person.homepage
@@ -229,46 +224,44 @@ const CompactPersonCard: React.FC<{ person: Person }> = ({ person }) => {
   return (
     <Wrapper
       {...props}
-      className={`block bg-white border border-slate-100 rounded-xl p-8 transition-all duration-500 group hover:shadow-xl hover:border-brand-red/10 animate-fade-in-up flex items-center gap-8 ${
+      className={`block bg-white border border-slate-100 rounded-lg p-5 transition-all duration-300 group hover:shadow-lg hover:border-brand-red/20 animate-fade-in-up ${
         person.homepage ? "cursor-pointer" : "cursor-default"
       }`}
     >
-      {/* Increased image size for better presence in the minimal layout */}
-      <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-50 flex-shrink-0 border-2 border-white shadow-sm ring-1 ring-slate-100 transition-transform duration-500 group-hover:scale-105">
-        <img
-          src={person.avatar}
-          alt={name}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
-
-      <div className="min-w-0 flex-grow py-1">
-        <div className="flex justify-between items-center">
-          <div>
-            {/* Prominent Serif font for Name */}
-            <h3 className="font-serif font-bold text-slate-900 text-xl md:text-2xl group-hover:text-brand-red transition-colors truncate">
-              {name}
-            </h3>
-            {/* Refined Title: Slightly lowered with spacing and optimized color */}
-            <div className="mt-3.5 flex items-center gap-3">
-              <p className="text-xs uppercase text-brand-red/60 font-bold tracking-[0.15em] leading-none">
+      <div className="flex items-start gap-4">
+        <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100">
+          <img
+            src={person.avatar}
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+          />
+        </div>
+        <div className="min-w-0 flex-grow">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-serif font-bold text-slate-800 text-lg group-hover:text-brand-red transition-colors truncate">
+                {name}
+              </h3>
+              <p className="text-xs uppercase text-slate-400 font-medium truncate">
                 {title}
               </p>
               {person.grade && (
-                <span className="text-[10px] bg-slate-50 px-2 py-0.5 rounded text-slate-400 font-mono border border-slate-100">
+                <span className="inline-block mt-1 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
                   {person.grade}
                 </span>
               )}
             </div>
+            {person.homepage && (
+              <ArrowRight
+                size={16}
+                className="text-slate-300 group-hover:text-brand-red transition-colors opacity-0 group-hover:opacity-100"
+              />
+            )}
           </div>
-
-          {/* Minimal external link indicator */}
-          {person.homepage && (
-            <div className="w-9 h-9 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:text-brand-red group-hover:border-brand-red/20 transition-all duration-300 group-hover:bg-brand-red/[0.02]">
-              <ArrowUpRight size={16} />
-            </div>
-          )}
+          <p className="text-sm text-slate-500 leading-relaxed font-light line-clamp-2 mt-2">
+            {bio}
+          </p>
         </div>
       </div>
     </Wrapper>
@@ -302,7 +295,7 @@ const People: React.FC = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen pt-24 text-center text-slate-400 font-serif">
+      <div className="min-h-screen pt-24 text-center">
         {t("common.loading")}
       </div>
     );
@@ -323,12 +316,10 @@ const People: React.FC = () => {
   }> = ({ title, children, count }) => {
     if (count === 0) return null;
     return (
-      <section className="mb-24">
-        <div className="flex items-center gap-6 mb-12 border-b border-slate-100 pb-5">
-          <h2 className="text-3xl font-serif font-bold text-brand-dark">
-            {title}
-          </h2>
-          <span className="text-xs font-mono text-slate-300 border border-slate-100 px-2.5 py-0.5 rounded-full">
+      <section className="mb-20">
+        <div className="flex items-center gap-4 mb-8 border-b border-slate-100 pb-4">
+          <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
+          <span className="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
             {count}
           </span>
         </div>
@@ -338,7 +329,7 @@ const People: React.FC = () => {
   };
 
   const CompactGrid: React.FC<{ items: Person[] }> = ({ items }) => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {items.map((p) => (
         <CompactPersonCard key={p.id} person={p} />
       ))}
@@ -348,26 +339,26 @@ const People: React.FC = () => {
   return (
     <div className="bg-white min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="mb-20 pt-10 text-center md:text-left border-l-4 border-brand-red pl-8">
-          <h1 className="text-5xl md:text-7xl font-serif text-brand-dark mb-6 tracking-tight">
+        <header className="mb-16 pt-10">
+          <h1 className="text-4xl md:text-5xl font-serif text-brand-dark mb-4">
             {t("nav.people")}
           </h1>
-          <p className="text-xl text-slate-400 font-light max-w-3xl leading-relaxed">
-            Our team brings together diverse perspectives to push the boundaries
-            of language processing and information systems.
+          <p className="text-lg text-slate-500 font-light max-w-2xl">
+            Meet the faculty, researchers, students, and staff of the Center for
+            Language and Information Research.
           </p>
         </header>
 
-        {/* Teachers - Maintain full cards with Bio and expand functionality */}
+        {/* Teachers */}
         <Section title={t("people.categories.Teachers")} count={faculty.length}>
-          <div className="space-y-10">
+          <div className="space-y-8">
             {faculty.map((p) => (
               <TeacherCard key={p.id} person={p} />
             ))}
           </div>
         </Section>
 
-        {/* Student and Staff Sections - Using the Minimal CompactGrid layout */}
+        {/* Visiting Scholars */}
         <Section
           title={t("people.categories.Visiting Scholars")}
           count={visiting.length}
@@ -375,10 +366,12 @@ const People: React.FC = () => {
           <CompactGrid items={visiting} />
         </Section>
 
+        {/* PhD Students */}
         <Section title={t("people.categories.PhD")} count={phd.length}>
           <CompactGrid items={phd} />
         </Section>
 
+        {/* Academic Masters */}
         <Section
           title={t("people.categories.Academic Master")}
           count={masterAcad.length}
@@ -386,6 +379,7 @@ const People: React.FC = () => {
           <CompactGrid items={masterAcad} />
         </Section>
 
+        {/* Professional Masters */}
         <Section
           title={t("people.categories.Professional Master")}
           count={masterProf.length}
@@ -393,6 +387,7 @@ const People: React.FC = () => {
           <CompactGrid items={masterProf} />
         </Section>
 
+        {/* General Masters */}
         <Section
           title={t("people.categories.Master")}
           count={masterGeneral.length}
@@ -400,10 +395,12 @@ const People: React.FC = () => {
           <CompactGrid items={masterGeneral} />
         </Section>
 
+        {/* Research Assistants */}
         <Section title={t("people.categories.RA")} count={ra.length}>
           <CompactGrid items={ra} />
         </Section>
 
+        {/* Administrative & Interns */}
         <Section
           title={t("people.categories.InternAndSecretary")}
           count={internAndSecretary.length}
@@ -412,7 +409,7 @@ const People: React.FC = () => {
         </Section>
 
         {people.length === 0 && !loading && (
-          <div className="py-24 text-center text-slate-300 italic font-serif">
+          <div className="py-20 text-center text-slate-300 italic">
             {t("common.noData")}
           </div>
         )}
