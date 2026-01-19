@@ -42,7 +42,6 @@ const Publications: React.FC = () => {
       ? publications
       : publications.filter((p) => p.year.toString() === filterYear);
 
-  // Group by year
   const groupedPubs: { [key: number]: Publication[] } = {};
   filteredPubs.forEach((pub) => {
     if (!groupedPubs[pub.year]) groupedPubs[pub.year] = [];
@@ -64,14 +63,6 @@ const Publications: React.FC = () => {
       default:
         return <Layout size={14} className="text-slate-400" />;
     }
-  };
-
-  const getTypeLabel = (type: string) => {
-    return type === "Journal"
-      ? "期刊 (Journal)"
-      : type === "Conference"
-      ? "会议 (Conference)"
-      : type;
   };
 
   if (loading) {
@@ -133,13 +124,13 @@ const Publications: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-12">
-                {groupedPubs[year].map((pub, index) => (
+                {groupedPubs[year].map((pub) => (
                   <div
                     key={pub.id}
                     className="group flex flex-col md:flex-row gap-6 md:gap-12 relative"
                   >
                     {/* Metadata Column */}
-                    <div className="md:w-32 flex-shrink-0 pt-1">
+                    <div className="md:w-32 flex-shrink-0 pt-1.5">
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2 px-2 py-1 rounded bg-slate-50 border border-slate-100 w-fit">
                           {getTypeIcon(pub.type)}
@@ -157,34 +148,28 @@ const Publications: React.FC = () => {
                           href={pub.link}
                           target="_blank"
                           rel="noreferrer"
-                          className="block text-xl md:text-2xl font-serif text-brand-dark mb-4 leading-snug hover:text-brand-red transition-colors decoration-brand-red/20 underline-offset-8 group-hover:underline"
+                          className="block text-xl md:text-2xl font-serif text-brand-dark mb-3 leading-snug hover:text-brand-red transition-colors decoration-brand-red/20 underline-offset-8 group-hover:underline decoration-1"
                         >
                           {pub.title}
                         </a>
                       ) : (
-                        <h3 className="text-xl md:text-2xl font-serif text-brand-dark mb-4 leading-snug">
+                        <h3 className="text-xl md:text-2xl font-serif text-brand-dark mb-3 leading-snug">
                           {pub.title}
                         </h3>
                       )}
 
-                      <div className="text-slate-500 font-light mb-4 text-lg">
+                      {/* Optimized Author Display: Uniform and clean */}
+                      <div className="text-slate-600 font-normal mb-3 text-base md:text-lg leading-relaxed">
                         {pub.authors.map((author, i) => (
-                          <span
-                            key={i}
-                            className={
-                              author.toLowerCase().includes("zhang")
-                                ? "font-medium text-brand-dark underline decoration-brand-red/30"
-                                : ""
-                            }
-                          >
+                          <span key={i} className="inline-block">
                             {author}
-                            {i < pub.authors.length - 1 ? ", " : ""}
+                            {i < pub.authors.length - 1 ? ",\u00A0" : ""}
                           </span>
                         ))}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-6">
-                        <span className="text-sm font-bold text-slate-700 italic">
+                      <div className="flex flex-wrap items-center gap-4">
+                        <span className="text-sm font-bold text-slate-800 italic bg-slate-50 px-2 py-0.5 rounded">
                           {pub.venue}
                         </span>
                         {pub.tags && pub.tags.length > 0 && (
@@ -192,7 +177,7 @@ const Publications: React.FC = () => {
                             {pub.tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="text-[10px] text-slate-400 font-mono uppercase tracking-widest px-2 py-0.5 border border-slate-100 rounded"
+                                className="text-[9px] text-slate-400 font-mono uppercase tracking-widest px-1.5 py-0.5 border border-slate-100 rounded"
                               >
                                 {tag}
                               </span>
