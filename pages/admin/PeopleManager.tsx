@@ -15,14 +15,12 @@ import {
   Download,
   Save,
   X,
-  AlertTriangle,
   Upload,
-  ZoomIn,
-  ZoomOut,
-  Move,
-  Crop,
   Loader2,
-  RefreshCcw,
+  Link as LinkIcon,
+  Hash,
+  Mail,
+  User,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +38,7 @@ const ImageCropperModal: React.FC<{
   const offsetRef = useRef({ x: 0, y: 0 });
   const zoomRef = useRef(1);
   const [imgStatus, setImgStatus] = useState<"loading" | "loaded" | "error">(
-    "loading"
+    "loading",
   );
 
   const imgDisplayRef = useRef<HTMLImageElement>(null);
@@ -51,22 +49,19 @@ const ImageCropperModal: React.FC<{
   const EXPORT_SIZE = 600;
   const RATIO = EXPORT_SIZE / UI_BOX_SIZE;
 
-  // 1. 同步视觉更新
   const updateVisuals = useCallback(() => {
     if (!imgDisplayRef.current) return;
     const { x, y } = offsetRef.current;
     const z = zoomRef.current;
-    // 使用 translate3d 配合物理坐标映射
     imgDisplayRef.current.style.transform = `translate3d(-50%, -50%, 0) translate3d(${x}px, ${y}px, 0) scale(${z})`;
   }, []);
 
-  // 2. 初始自适应：确保图片覆盖 320px 的框
   const handleAutoFit = useCallback(() => {
     if (!imgDisplayRef.current) return;
     const img = imgDisplayRef.current;
     const scale = Math.max(
       UI_BOX_SIZE / img.naturalWidth,
-      UI_BOX_SIZE / img.naturalHeight
+      UI_BOX_SIZE / img.naturalHeight,
     );
     zoomRef.current = scale;
     offsetRef.current = { x: 0, y: 0 };
@@ -74,7 +69,6 @@ const ImageCropperModal: React.FC<{
     updateVisuals();
   }, [updateVisuals]);
 
-  // 3. 滚轮控制
   const handleWheel = (e: React.WheelEvent) => {
     if (imgStatus !== "loaded") return;
     e.preventDefault();
@@ -119,7 +113,6 @@ const ImageCropperModal: React.FC<{
     };
   }, [updateVisuals]);
 
-  // 4. 绝对坐标导出算法 (核心修复)
   const handleConfirm = () => {
     const img = imageRef.current;
     if (!img || imgStatus !== "loaded") return;
@@ -130,41 +123,33 @@ const ImageCropperModal: React.FC<{
 
     canvas.width = EXPORT_SIZE;
     canvas.height = EXPORT_SIZE;
-
-    // 填充底色
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE);
 
-    // 关键：不使用 ctx.scale 这种容易产生舍入误差的方式
-    // 而是直接计算在 600px 空间下图片的绝对绘制位置和大小
-
-    // a. 计算缩放后的物理尺寸 (UI 缩放 * 物理倍率 1.875)
     const drawWidth = img.naturalWidth * zoomRef.current * RATIO;
     const drawHeight = img.naturalHeight * zoomRef.current * RATIO;
-
-    // b. 计算图片中心在 600px 画布中的绝对偏移
     const canvasCenterX = EXPORT_SIZE / 2 + offsetRef.current.x * RATIO;
     const canvasCenterY = EXPORT_SIZE / 2 + offsetRef.current.y * RATIO;
 
     try {
-      // c. 使用 9 参数 drawImage 形式精确控制每一个像素
       ctx.drawImage(
         img,
         canvasCenterX - drawWidth / 2,
         canvasCenterY - drawHeight / 2,
         drawWidth,
-        drawHeight
+        drawHeight,
       );
-
       canvas.toBlob(
         (blob) => {
           if (blob) onConfirm(blob);
         },
         "image/jpeg",
-        0.95
+        0.95,
       );
     } catch (e) {
-      alert("CORS 限制：无法读取服务器图片像素。请尝试上传本地照片。");
+      alert(
+        "CORS 限制：无法读取该图片像素。请确保图片允许跨域或尝试本地上传。",
+      );
       onCancel();
     }
   };
@@ -176,7 +161,7 @@ const ImageCropperModal: React.FC<{
           <div>
             <h3 className="text-2xl font-bold text-slate-800">照片精准裁剪</h3>
             <p className="text-sm text-slate-400 mt-1">
-              绝对映射模式 (600px) · 倍率: {zoom.toFixed(4)}x
+              滚动缩放，拖拽调整位置
             </p>
           </div>
           <button
@@ -206,9 +191,7 @@ const ImageCropperModal: React.FC<{
             }}
             onError={() => setImgStatus("error")}
             draggable={false}
-            className={`absolute select-none pointer-events-none max-none w-auto h-auto ${
-              imgStatus === "loaded" ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute select-none pointer-events-none max-none w-auto h-auto ${imgStatus === "loaded" ? "opacity-100" : "opacity-0"}`}
             style={{
               left: "50%",
               top: "50%",
@@ -224,45 +207,25 @@ const ImageCropperModal: React.FC<{
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div
               style={{ width: `${UI_BOX_SIZE}px`, height: `${UI_BOX_SIZE}px` }}
-              className={`border-2 border-white/60 shadow-[0_0_0_2000px_rgba(15,23,42,0.85)] relative ${
-                isCircle ? "rounded-full" : ""
-              }`}
+              className={`border-2 border-white/60 shadow-[0_0_0_2000px_rgba(15,23,42,0.85)] relative ${isCircle ? "rounded-full" : ""}`}
             />
           </div>
         </div>
 
-        <div className="p-10 bg-white flex justify-between items-center">
-          <div className="flex-grow max-w-xs mr-10">
-            <input
-              type="range"
-              min="0.001"
-              max="3"
-              step="0.001"
-              value={zoom}
-              onChange={(e) => {
-                const val = parseFloat(e.target.value);
-                zoomRef.current = val;
-                setZoom(val);
-                updateVisuals();
-              }}
-              className="w-full h-2 bg-slate-100 rounded-full appearance-none accent-brand-red cursor-pointer"
-            />
-          </div>
-          <div className="flex gap-4">
-            <button
-              onClick={onCancel}
-              className="px-8 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl"
-            >
-              取消
-            </button>
-            <button
-              onClick={handleConfirm}
-              disabled={imgStatus !== "loaded"}
-              className="px-12 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 active:scale-95 transition-all"
-            >
-              确认并上传
-            </button>
-          </div>
+        <div className="p-10 bg-white flex justify-end gap-4">
+          <button
+            onClick={onCancel}
+            className="px-8 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl"
+          >
+            取消
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={imgStatus !== "loaded"}
+            className="px-12 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 active:scale-95 transition-all"
+          >
+            确认使用
+          </button>
         </div>
       </div>
     </div>
@@ -278,7 +241,6 @@ const PeopleManager: React.FC = () => {
   const [editingItem, setEditingItem] = useState<Partial<Person>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const handleError = (err: any) => {
@@ -316,6 +278,8 @@ const PeopleManager: React.FC = () => {
 
   const handleSave = async () => {
     if (isUploading) return alert("正在同步照片，请稍候...");
+    if (!editingItem.nameZh && !editingItem.name)
+      return alert("请输入成员姓名");
 
     let newItem = { ...editingItem } as Person;
     setIsLoading(true);
@@ -327,7 +291,6 @@ const PeopleManager: React.FC = () => {
       }
       setIsModalOpen(false);
       refreshData();
-      alert("成员信息已保存");
     } catch (err: any) {
       handleError(err);
     } finally {
@@ -354,7 +317,6 @@ const PeopleManager: React.FC = () => {
         type: "image/jpeg",
       });
       const url = await uploadFile(file);
-      // 核心：上传完成后必须立即更新 editingItem
       setEditingItem((prev) => ({ ...prev, avatar: url }));
     } catch (err: any) {
       handleError(err);
@@ -370,7 +332,7 @@ const PeopleManager: React.FC = () => {
         order: 1,
         avatar:
           "https://ui-avatars.com/api/?name=User&background=f1f5f9&color=cbd5e1",
-      }
+      },
     );
     setIsModalOpen(true);
   };
@@ -403,7 +365,7 @@ const PeopleManager: React.FC = () => {
         <h2 className="text-2xl font-bold text-slate-800">团队成员管理</h2>
         <button
           onClick={() => openModal()}
-          className="px-6 py-2 bg-brand-red text-white rounded-xl font-bold shadow-lg"
+          className="px-6 py-2 bg-brand-red text-white rounded-xl font-bold shadow-lg hover:bg-red-700 transition-all"
         >
           新增成员
         </button>
@@ -412,11 +374,7 @@ const PeopleManager: React.FC = () => {
       <div className="flex flex-wrap gap-2 mb-8 border-b pb-4">
         <button
           onClick={() => setActiveCategory("All")}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold ${
-            activeCategory === "All"
-              ? "bg-slate-800 text-white"
-              : "bg-slate-100"
-          }`}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold ${activeCategory === "All" ? "bg-slate-800 text-white" : "bg-slate-100"}`}
         >
           全部
         </button>
@@ -424,9 +382,7 @@ const PeopleManager: React.FC = () => {
           <button
             key={c}
             onClick={() => setActiveCategory(c)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold ${
-              activeCategory === c ? "bg-brand-red text-white" : "bg-slate-100"
-            }`}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold ${activeCategory === c ? "bg-brand-red text-white" : "bg-slate-100"}`}
           >
             {c}
           </button>
@@ -441,11 +397,7 @@ const PeopleManager: React.FC = () => {
               className="border border-slate-100 rounded-[2rem] p-6 flex gap-6 items-center relative group bg-white hover:shadow-xl transition-all"
             >
               <div
-                className={`w-16 h-16 overflow-hidden bg-slate-100 shrink-0 ${
-                  isCircleCategory(person.category)
-                    ? "rounded-full"
-                    : "rounded-2xl"
-                }`}
+                className={`w-16 h-16 overflow-hidden bg-slate-100 shrink-0 ${isCircleCategory(person.category) ? "rounded-full" : "rounded-2xl"}`}
               >
                 <img
                   src={person.avatar}
@@ -458,6 +410,9 @@ const PeopleManager: React.FC = () => {
                 </h3>
                 <p className="text-[10px] text-brand-red font-bold uppercase mb-1">
                   {person.category}
+                </p>
+                <p className="text-[10px] text-slate-400 truncate">
+                  {person.titleZh || person.title || "职位未填"}
                 </p>
               </div>
               <div className="flex flex-col gap-2">
@@ -489,7 +444,7 @@ const PeopleManager: React.FC = () => {
           <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl">
             <div className="flex justify-between items-center p-8 border-b bg-slate-50/30">
               <h3 className="text-2xl font-bold">
-                {editingItem.id ? "修改档案" : "录入新成员"}
+                {editingItem.id ? "修改成员档案" : "录入新成员"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -500,14 +455,11 @@ const PeopleManager: React.FC = () => {
             </div>
 
             <div className="p-10 space-y-10">
-              <div className="flex flex-col md:flex-row gap-12 items-start">
-                <div className="flex flex-col items-center gap-6 shrink-0">
+              <div className="flex flex-col lg:flex-row gap-12 items-start">
+                {/* 左侧：头像管理 */}
+                <div className="flex flex-col items-center gap-6 shrink-0 w-full lg:w-72">
                   <div
-                    className={`w-44 h-44 overflow-hidden border-4 border-white shadow-xl bg-slate-100 relative ${
-                      isCircleCategory(editingItem.category || "")
-                        ? "rounded-full"
-                        : "rounded-3xl"
-                    }`}
+                    className={`w-44 h-44 overflow-hidden border-4 border-white shadow-xl bg-slate-100 relative ${isCircleCategory(editingItem.category || "") ? "rounded-full" : "rounded-3xl"}`}
                   >
                     <img
                       src={editingItem.avatar}
@@ -525,9 +477,10 @@ const PeopleManager: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2 w-full">
-                    <label className="cursor-pointer px-4 py-3 bg-brand-red text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-red-700">
-                      <Upload size={14} /> 上传并裁剪
+
+                  <div className="space-y-4 w-full">
+                    <label className="cursor-pointer px-4 py-3 bg-brand-red text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-red-700 transition-colors">
+                      <Upload size={14} /> 本地图片裁剪
                       <input
                         type="file"
                         className="hidden"
@@ -535,85 +488,153 @@ const PeopleManager: React.FC = () => {
                         onChange={handleFileChange}
                       />
                     </label>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        <LinkIcon size={12} /> 头像链接 (Avatar URL)
+                      </label>
+                      <input
+                        placeholder="https://oss-link..."
+                        value={editingItem.avatar || ""}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            avatar: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-50 rounded-2xl text-xs font-mono focus:border-brand-red focus:bg-white transition-all outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
 
+                {/* 右侧：信息录入 */}
                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                      实验室分类
-                    </label>
-                    <select
-                      value={editingItem.category}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          category: e.target.value as PersonCategory,
-                        })
-                      }
-                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red"
-                    >
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      placeholder="中文姓名"
-                      value={editingItem.nameZh || ""}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          nameZh: e.target.value,
-                        })
-                      }
-                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
-                    />
-                    <input
-                      placeholder="English Name"
-                      value={editingItem.name || ""}
-                      onChange={(e) =>
-                        setEditingItem({ ...editingItem, name: e.target.value })
-                      }
-                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
-                    />
+                  {/* 第一列：身份与姓名 */}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        成员类别
+                      </label>
+                      <select
+                        value={editingItem.category}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            category: e.target.value as PersonCategory,
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                      >
+                        {categories.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        中文姓名
+                      </label>
+                      <input
+                        placeholder="例如：张三"
+                        value={editingItem.nameZh || ""}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            nameZh: e.target.value,
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        English Name
+                      </label>
+                      <input
+                        placeholder="e.g. San Zhang"
+                        value={editingItem.name || ""}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            name: e.target.value,
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-4 pt-6">
-                    <input
-                      placeholder="职位 (如: 博士后)"
-                      value={editingItem.titleZh || ""}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          titleZh: e.target.value,
-                        })
-                      }
-                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
-                    />
-                    <input
-                      placeholder="Email"
-                      value={editingItem.email || ""}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          email: e.target.value,
-                        })
-                      }
-                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="排序权重"
-                      value={editingItem.order}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          order: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm"
-                    />
+
+                  {/* 第二列：职位与联系方式 */}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        中文职位
+                      </label>
+                      <input
+                        placeholder="例如：博士后、2024级博士生"
+                        value={editingItem.titleZh || ""}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            titleZh: e.target.value,
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        English Title / Position
+                      </label>
+                      <input
+                        placeholder="e.g. Postdoctoral Fellow"
+                        value={editingItem.title || ""}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            title: e.target.value,
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                          <Mail size={12} /> Email
+                        </label>
+                        <input
+                          placeholder="email@whu.edu.cn"
+                          value={editingItem.email || ""}
+                          onChange={(e) =>
+                            setEditingItem({
+                              ...editingItem,
+                              email: e.target.value,
+                            })
+                          }
+                          className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                          <Hash size={12} /> 排序权重
+                        </label>
+                        <input
+                          type="number"
+                          value={editingItem.order}
+                          onChange={(e) =>
+                            setEditingItem({
+                              ...editingItem,
+                              order: parseInt(e.target.value),
+                            })
+                          }
+                          className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -622,20 +643,16 @@ const PeopleManager: React.FC = () => {
             <div className="p-8 border-t flex justify-end gap-4 bg-slate-50/50">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-8 py-3 text-slate-400 font-bold hover:bg-slate-200 rounded-xl"
+                className="px-8 py-3 text-slate-400 font-bold hover:bg-slate-200 rounded-xl transition-all"
               >
                 取消
               </button>
               <button
                 onClick={handleSave}
                 disabled={isUploading || isLoading}
-                className={`px-16 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl active:scale-95 transition-all ${
-                  isUploading || isLoading
-                    ? "opacity-50 grayscale cursor-wait"
-                    : "hover:bg-red-700"
-                }`}
+                className={`px-16 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl active:scale-95 transition-all ${isUploading || isLoading ? "opacity-50 grayscale cursor-wait" : "hover:bg-red-700"}`}
               >
-                {isUploading ? "正在同步照片..." : "确认并永久保存"}
+                {isUploading ? "正在同步图片..." : "确认保存成员"}
               </button>
             </div>
           </div>
