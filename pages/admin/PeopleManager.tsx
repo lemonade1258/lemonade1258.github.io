@@ -21,6 +21,7 @@ import {
   Hash,
   Mail,
   User,
+  Globe,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -601,22 +602,40 @@ const PeopleManager: React.FC = () => {
                         className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                          <Mail size={12} /> Email
-                        </label>
-                        <input
-                          placeholder="email@whu.edu.cn"
-                          value={editingItem.email || ""}
-                          onChange={(e) =>
-                            setEditingItem({
-                              ...editingItem,
-                              email: e.target.value,
-                            })
-                          }
-                          className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
-                        />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                            <Mail size={12} /> Email
+                          </label>
+                          <input
+                            placeholder="email@whu.edu.cn"
+                            value={editingItem.email || ""}
+                            onChange={(e) =>
+                              setEditingItem({
+                                ...editingItem,
+                                email: e.target.value,
+                              })
+                            }
+                            className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                            <Globe size={12} /> 个人主页 URL
+                          </label>
+                          <input
+                            placeholder="https://..."
+                            value={editingItem.homepage || ""}
+                            onChange={(e) =>
+                              setEditingItem({
+                                ...editingItem,
+                                homepage: e.target.value,
+                              })
+                            }
+                            className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                          />
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
