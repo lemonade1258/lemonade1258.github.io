@@ -4,6 +4,7 @@ import { fetchNewsItem, trackNewsView } from "../lib/dataStore";
 import { NewsItem } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ArrowLeft, Calendar, User, X, Eye } from "lucide-react";
+import { processHtmlContent } from "../lib/imageUtils";
 
 const NewsDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,7 +26,7 @@ const NewsDetail: React.FC = () => {
           setArticle(item);
           // 异步增加浏览量
           trackNewsView(id).catch((err) =>
-            console.warn("View tracking failed", err)
+            console.warn("View tracking failed", err),
           );
         }
       } catch (err) {
@@ -153,7 +154,11 @@ const NewsDetail: React.FC = () => {
         {article.coverImage && (
           <div className="mb-12 rounded-lg overflow-hidden shadow-sm">
             <img
-              src={article.coverImage}
+              src={
+                processHtmlContent(`<img src="${article.coverImage}">`).match(
+                  /src="([^"]+)"/,
+                )?.[1] || article.coverImage
+              }
               alt={displayTitle}
               className="w-full h-auto object-cover max-h-[500px]"
             />
@@ -171,7 +176,9 @@ const NewsDetail: React.FC = () => {
             [&>table_td]:border-b [&>table_td]:border-slate-100 [&>table_td]:py-3 [&>table_td]:text-slate-500
           "
           onClick={handleContentClick}
-          dangerouslySetInnerHTML={{ __html: displayContent || "" }}
+          dangerouslySetInnerHTML={{
+            __html: processHtmlContent(displayContent || ""),
+          }}
         ></div>
 
         {!displayContent && (

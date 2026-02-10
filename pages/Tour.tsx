@@ -5,6 +5,7 @@ import { fetchContact, fetchNews } from "../lib/dataStore";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ContactInfo, NewsItem } from "../types";
 import SmartImage from "../components/SmartImage";
+import { processHtmlContent } from "../lib/imageUtils";
 
 const Tour: React.FC = () => {
   const { t, language } = useLanguage();
@@ -118,7 +119,7 @@ const Tour: React.FC = () => {
             <div
               className="prose prose-slate prose-sm md:prose-base max-w-none prose-p:text-slate-600 prose-p:font-light"
               dangerouslySetInnerHTML={{
-                __html: researchText || t("common.noData"),
+                __html: processHtmlContent(researchText) || t("common.noData"),
               }}
             />
           </div>
