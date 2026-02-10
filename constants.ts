@@ -89,7 +89,7 @@ export const STATIC_DATA = {
       title:
         "Professor; Ph.D. Supervisor; Deputy Director of the Center for Language and Information (CLAIN), Wuhan University",
       titleZh: "教授；博士生导师；武汉大学语言与信息研究中心副主任",
-      avatar: " https://my-web-clain.oss-cn-beijing.aliyuncs.com/xqq.png",
+      avatar: " ./assets/img_dd4bc2bd6fee.png",
       bio: "Prof. Qianqian Xie is a Professor at the School of Artificial Intelligence, Wuhan University, and the Deputy Director of the Center for Language and Information (CLAIN). She has long been engaged in research on natural language processing, medical AI, intelligent finance, model interpretability/controllability and reasoning, and multimodal fusion. She previously served as an Associate Research Scientist at Yale University, and has worked or conducted academic visits at Cornell University, the University of Manchester, and the University of Montreal. She has published over 70 papers in top conferences and journals such as NeurIPS, ACL, KDD, Nature Communications, and TKDE. She has led the NIH K99/R00 Pathway to Independence Award, NIH Early-Stage Researcher Grant (USD 830K), and the 2025 CCF–Tencent Rhino-Bird Fund. She is a recipient of the National High-level Young Talent Program (Overseas). Her honors include the Hubei Provincial Science and Technology Progress Award (2nd Class) and the CCL Outstanding English Paper Award. She serves as Senior Area Chair of EACL 2025 and Area Chair for ACL 2023/2025, EMNLP 2023/2025, NeurIPS 2025, COLING 2025, LREC 2026, and as Co-chair of the COLING 2025 Workshop.",
       bioZh:
         "谢倩倩，武汉大学人工智能学院教授、博士生导师，武汉大学语言与信息研究中心副主任。长期从事自然语言处理、医疗人工智能、智能金融、模型可解释性/可控性与推理、多模态融合等方向研究。曾任耶鲁大学副研究员，并在康奈尔大学、曼彻斯特大学和蒙特利尔大学工作与访问。在 NeurIPS、ACL、KDD、Nature Communications、TKDE 等国际顶级会议与期刊发表论文 70 余篇；主持美国国立卫生研究院（NIH）青年研究基金项目（约 83 万美元）、NIH K99/R00 青年独立研究者基金，以及 2025 年 CCF-腾讯犀牛鸟科研基金项目。国家高层次海外优青获得者；曾获湖北省科技进步二等奖、CCL 亮点英文论文奖等。担任 EACL 2025 资深领域主席，ACL 2023/2025、EMNLP 2023/2025、NeurIPS 2025、COLING 2025、LREC 2026 等领域主席，并任 COLING-2025 Workshop 大会联合主席。",
@@ -162,7 +162,7 @@ export const STATIC_DATA = {
       category: "Teachers",
       title: "Professor of Computer Science, University of Manchester",
       titleZh: "英国曼彻斯特大学计算机科学教授",
-      avatar: " https://my-web-clain.oss-cn-beijing.aliyuncs.com/Sophia.png",
+      avatar: " ./assets/img_4b02ebda8304.png",
       email: "sophia.ananiadou@manchester.ac.uk",
       homepage: "https://research.manchester.ac.uk/en/persons/sophia.ananiadou",
       bio: "Sophia Ananiadou is a Professor in Computer Science at the University of Manchester and Director of the National Centre for Text Mining (NaCTeM), the world's first publicly funded text mining centre, and an adjunct professor at Wuhan University. She is a leading expert in biomedical text mining and natural language processing, with interdisciplinary contributions to knowledge discovery, automated systematic reviews, and AI applications in biomedicine. She is a Turing Fellow, ELLIS Fellow, and has been ranked #1 internationally in text mining.",
@@ -260,7 +260,7 @@ export const STATIC_DATA = {
       title: "Professor",
       titleZh: "教授",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/people/peng%20min.jpg",
+        "./assets/img_023b08017061.jpg",
       email: "pengm@whu.edu.cn",
       homepage: "http://jszy.whu.edu.cn/pengmin/",
       bio: "Min Peng is a Professor at the School of Artificial Intelligence, Wuhan University, Director of the Center for Language and Information Research, and PhD Supervisor. She is a member of IEEE CIS ETTC, council member of China Chinese Information Society, committee member of Computational Linguistics Specialty Committee and Social Media Processing Specialty Committee of Chinese Information Society. She received her PhD in Computer Software and Theory from Wuhan University and conducted postdoctoral research at the Advanced Cyber-Infrastructure Laboratory, Department of Electrical and Computer Engineering, University of New Mexico, USA. Her long-term research focuses on artificial intelligence, natural language processing, information retrieval, topic models, knowledge graphs, cloud computing systems, and social computing.",
@@ -287,7 +287,7 @@ export const STATIC_DATA = {
       nameZh: "赖彦钊",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768914342318_avatar_1768914342059.jpg",
+        "./assets/img_3c109d7c0bc2.jpg",
       order: 2001,
       createdAt: "2026-01-07T14:14:35.011Z",
       updatedAt: "2026-01-20T13:05:44.043Z",
@@ -309,7 +309,7 @@ export const STATIC_DATA = {
       nameZh: "卢鹏",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768914287973_avatar_1768914287760.jpg",
+        "./assets/img_79dea526db99.jpg",
       order: 2003,
       createdAt: "2026-01-07T14:15:33.090Z",
       updatedAt: "2026-01-20T13:04:49.785Z",
@@ -331,7 +331,7 @@ export const STATIC_DATA = {
       nameZh: "黄佳佳",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768914271031_avatar_1768914270565.jpg",
+        "./assets/img_afe7073807ab.jpg",
       order: 2004,
       createdAt: "2026-01-07T14:15:58.157Z",
       updatedAt: "2026-01-20T13:04:38.640Z",
@@ -353,7 +353,7 @@ export const STATIC_DATA = {
       nameZh: "胡志伟",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768914355159_avatar_1768914354876.jpg",
+        "./assets/img_153af88ee6a1.jpg",
       order: 2005,
       createdAt: "2026-01-07T14:18:21.644Z",
       updatedAt: "2026-01-20T13:05:57.134Z",
@@ -375,7 +375,7 @@ export const STATIC_DATA = {
       nameZh: "刘志威",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768914365898_avatar_1768914365621.jpg",
+        "./assets/img_ebc6334e5ced.jpg",
       order: 2006,
       createdAt: "2026-01-08T07:05:01.079Z",
       updatedAt: "2026-01-20T13:06:07.334Z",
@@ -397,7 +397,7 @@ export const STATIC_DATA = {
       nameZh: "熊国钧",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768914386124_avatar_1768914385872.jpg",
+        "./assets/img_d18479b79edd.jpg",
       order: 2007,
       createdAt: "2026-01-08T07:06:01.505Z",
       updatedAt: "2026-01-20T13:06:27.451Z",
@@ -419,7 +419,7 @@ export const STATIC_DATA = {
       nameZh: "杨开来",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768914397465_avatar_1768914397187.jpg",
+        "./assets/img_71e633b4db15.jpg",
       order: 2008,
       createdAt: "2026-01-08T07:06:44.278Z",
       updatedAt: "2026-01-20T13:06:38.909Z",
@@ -439,7 +439,7 @@ export const STATIC_DATA = {
       nameZh: "姜玥辰",
       category: "Visiting Scholars",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768915541491_avatar_1768915541224.jpg",
+        "./assets/img_e129a8f1b95d.jpg",
       order: 2009,
       createdAt: "2026-01-20T12:53:14.023Z",
       updatedAt: "2026-01-20T13:25:42.756Z",
@@ -462,7 +462,7 @@ export const STATIC_DATA = {
       nameZh: "龚捷",
       category: "PhD",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768599160850_avatar_1768599160241.jpg",
+        "./assets/img_c4371445db3d.jpg",
       order: 3001,
       createdAt: "2026-01-07T13:41:24.030Z",
       updatedAt: "2026-01-20T13:40:37.142Z",
@@ -487,7 +487,7 @@ export const STATIC_DATA = {
       nameZh: "许艺怀",
       category: "PhD",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768599141113_avatar_1768599140838.jpg",
+        "./assets/img_5fc457d27104.jpg",
       order: 3002,
       createdAt: "2026-01-07T13:57:23.263Z",
       updatedAt: "2026-01-20T13:42:05.401Z",
@@ -513,7 +513,7 @@ export const STATIC_DATA = {
       nameZh: "黄希扬",
       category: "PhD",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768597738399_avatar_1768597738160.jpg",
+        "./assets/img_fa0a0fc35cfa.jpg",
       order: 3003,
       createdAt: "2026-01-07T14:05:51.069Z",
       updatedAt: "2026-01-20T13:44:20.191Z",
@@ -539,7 +539,7 @@ export const STATIC_DATA = {
       nameZh: "何菀滢",
       category: "PhD",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/people/%E4%BD%95%E8%8F%80%E6%BB%A2.jpg",
+        "./assets/img_53bf496d6a13.jpg",
       order: 3004,
       createdAt: "2026-01-07T14:06:25.856Z",
       updatedAt: "2026-01-16T20:02:22.163Z",
@@ -561,7 +561,7 @@ export const STATIC_DATA = {
       nameZh: "宋衍霖",
       category: "PhD",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768599189131_avatar_1768599188873.jpg",
+        "./assets/img_1951f02d1977.jpg",
       order: 3005,
       createdAt: "2026-01-07T14:12:50.352Z",
       updatedAt: "2026-01-16T21:33:10.722Z",
@@ -583,7 +583,7 @@ export const STATIC_DATA = {
       nameZh: "罗俊",
       category: "PhD",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/people/%E7%BD%97%E4%BF%8A.jpg",
+        "./assets/img_fbdd4fed8348.jpg",
       order: 3006,
       createdAt: "2026-01-07T14:13:20.749Z",
       updatedAt: "2026-01-20T13:44:50.561Z",
@@ -609,7 +609,7 @@ export const STATIC_DATA = {
       nameZh: "肖梦溪",
       category: "PhD",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/people/%E8%82%96%E6%A2%A6%E6%BA%AA.jpg",
+        "./assets/img_11979942cd51.jpg",
       order: 3007,
       createdAt: "2026-01-07T13:44:54.507Z",
       updatedAt: "2026-01-20T13:45:14.268Z",
@@ -634,7 +634,7 @@ export const STATIC_DATA = {
       nameZh: "韩祖臣",
       category: "Master",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/people/%E9%9F%A9%E7%A5%96%E8%87%A3.png",
+        "./assets/img_ff33ea5dfc99.png",
       order: 4001,
       createdAt: "2026-01-07T13:47:53.230Z",
       updatedAt: "2026-01-20T13:43:53.515Z",
@@ -659,7 +659,7 @@ export const STATIC_DATA = {
       nameZh: "张恩泽",
       category: "Master",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768599337485_avatar_1768599337227.jpg",
+        "./assets/img_d9e5013f6cc2.jpg",
       order: 4002,
       createdAt: "2026-01-07T13:48:37.755Z",
       updatedAt: "2026-01-20T13:42:54.308Z",
@@ -684,7 +684,7 @@ export const STATIC_DATA = {
       nameZh: "刘骥飞",
       category: "Master",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768599215648_avatar_1768599215389.jpg",
+        "./assets/img_76956e56e1b0.jpg",
       order: 4003,
       createdAt: "2026-01-07T13:52:11.612Z",
       updatedAt: "2026-01-16T21:33:37.037Z",
@@ -706,7 +706,7 @@ export const STATIC_DATA = {
       nameZh: "柯宇瀚",
       category: "Master",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768599283398_avatar_1768599283137.jpg",
+        "./assets/img_23306e7452c0.jpg",
       order: 4004,
       createdAt: "2026-01-07T13:56:38.783Z",
       updatedAt: "2026-01-16T21:34:46.677Z",
@@ -728,7 +728,7 @@ export const STATIC_DATA = {
       nameZh: "杨俊",
       category: "Master",
       avatar:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/uploads/1768599316703_avatar_1768599316433.jpg",
+        "./assets/img_a036e690690b.jpg",
       order: 4005,
       createdAt: "2026-01-07T13:58:47.889Z",
       updatedAt: "2026-01-20T13:43:23.926Z",
@@ -1421,9 +1421,9 @@ export const STATIC_DATA = {
       summaryZh:
         "2025 年 9 月 21 日，武汉大学人工智能学院谢倩倩教授应邀参加 CCKS 2025 全国知识图谱与语义计算大会（China Conference on Knowledge Graph and Semantic Computing），并在医疗知识图谱论坛作题为\n《医疗领域知识增强大语言模型与应用》\n的专题学术报告。",
       content:
-        '<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>Prof. Xie Qianqian at CCKS 2025 — Invited Talk</title>\n  <style>\n    body {\n      font-family: "Noto Sans", Arial, sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    strong { font-weight: 600; }\n    .talk-title { font-weight: 600; color:#0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 12px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <p>\n      On September 21, 2025, Prof. Xie Qianqian from the School of Artificial Intelligence, Wuhan University,\n      was invited to attend the\n      <strong>CCKS 2025: China Conference on Knowledge Graph and Semantic Computing</strong>.\n      She delivered an invited talk at the Medical Knowledge Graph Forum titled:\n    </p>\n    <p class="talk-title">“Knowledge-Enhanced Large Language Models and Applications in Healthcare”</p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-1.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-2.jpg" alt="">\n    <p>\n      The <strong>China Conference on Knowledge Graph and Semantic Computing (CCKS)</strong>,\n      organized by the CIPS Technical Committee on Language and Knowledge Computing,\n      originated from CKGS and CSWS. Since the merger in 2016, it has grown into a leading academic conference\n      in China covering knowledge graphs, semantic computing, and related technologies.\n      The conference brings together researchers and practitioners from knowledge representation and reasoning,\n      natural language understanding and knowledge acquisition, graph data management and computation,\n      intelligent question answering, and more.\n    </p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-3.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-4.jpg" alt="">\n    <p>\n      The theme of CCKS 2025 is\n      <strong>“Large Model Agents and Knowledge Computing”</strong>,\n      emphasizing accuracy and reliability when empowering LLM-based agents with knowledge graphs.\n    </p>\n    <p>\n      In her talk, Prof. Xie explored the challenges and opportunities of applying knowledge-enhanced\n      large language models in the medical domain. She discussed the potential of LLMs in medical text understanding,\n      clinical reasoning, and knowledge-grounded generation, while analyzing key challenges such as\n      domain coverage, diagnostic reliability, and explainability.\n    </p>\n    <h2>Key Topics Covered</h2>\n    <p><strong>· Domain Knowledge Injection:</strong> Integrating structured and unstructured medical knowledge, multisource clinical and research data, to enhance LLM domain expertise.</p>\n    <p><strong>· Professional Capability Enhancement:</strong> Improving analytical accuracy and decision reliability of LLMs in real-world medical scenarios.</p>\n    <p><strong>· Application Prospects:</strong> Discussing key techniques and future directions for knowledge-enhanced LLMs in healthcare.</p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-5.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-6.jpg" alt="">\n    <p>\n      This event showcased Prof. Xie’s latest research achievements in natural language processing and artificial intelligence,\n      highlighting her influential role in advancing LLM deployment in vertical professional domains\n      and promoting academic exchange.\n    </p>\n  </div>\n</body>\n</html>',
+        '<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>Prof. Xie Qianqian at CCKS 2025 — Invited Talk</title>\n  <style>\n    body {\n      font-family: "Noto Sans", Arial, sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    strong { font-weight: 600; }\n    .talk-title { font-weight: 600; color:#0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 12px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <p>\n      On September 21, 2025, Prof. Xie Qianqian from the School of Artificial Intelligence, Wuhan University,\n      was invited to attend the\n      <strong>CCKS 2025: China Conference on Knowledge Graph and Semantic Computing</strong>.\n      She delivered an invited talk at the Medical Knowledge Graph Forum titled:\n    </p>\n    <p class="talk-title">“Knowledge-Enhanced Large Language Models and Applications in Healthcare”</p>\n    <img src="./assets/img_e664fb157c01.jpg" alt="">\n    <img src="./assets/img_fde884daca5e.jpg" alt="">\n    <p>\n      The <strong>China Conference on Knowledge Graph and Semantic Computing (CCKS)</strong>,\n      organized by the CIPS Technical Committee on Language and Knowledge Computing,\n      originated from CKGS and CSWS. Since the merger in 2016, it has grown into a leading academic conference\n      in China covering knowledge graphs, semantic computing, and related technologies.\n      The conference brings together researchers and practitioners from knowledge representation and reasoning,\n      natural language understanding and knowledge acquisition, graph data management and computation,\n      intelligent question answering, and more.\n    </p>\n    <img src="./assets/img_119a50a710b4.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-4.jpg" alt="">\n    <p>\n      The theme of CCKS 2025 is\n      <strong>“Large Model Agents and Knowledge Computing”</strong>,\n      emphasizing accuracy and reliability when empowering LLM-based agents with knowledge graphs.\n    </p>\n    <p>\n      In her talk, Prof. Xie explored the challenges and opportunities of applying knowledge-enhanced\n      large language models in the medical domain. She discussed the potential of LLMs in medical text understanding,\n      clinical reasoning, and knowledge-grounded generation, while analyzing key challenges such as\n      domain coverage, diagnostic reliability, and explainability.\n    </p>\n    <h2>Key Topics Covered</h2>\n    <p><strong>· Domain Knowledge Injection:</strong> Integrating structured and unstructured medical knowledge, multisource clinical and research data, to enhance LLM domain expertise.</p>\n    <p><strong>· Professional Capability Enhancement:</strong> Improving analytical accuracy and decision reliability of LLMs in real-world medical scenarios.</p>\n    <p><strong>· Application Prospects:</strong> Discussing key techniques and future directions for knowledge-enhanced LLMs in healthcare.</p>\n    <img src="./assets/img_04d6f25db4f7.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-6.jpg" alt="">\n    <p>\n      This event showcased Prof. Xie’s latest research achievements in natural language processing and artificial intelligence,\n      highlighting her influential role in advancing LLM deployment in vertical professional domains\n      and promoting academic exchange.\n    </p>\n  </div>\n</body>\n</html>',
       contentZh:
-        '<!doctype html>\n<html lang="zh-CN">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>谢倩倩教授参加 CCKS 2025 并作专题报告</title>\n  <style>\n    body {\n      font-family: "Noto Sans SC","Microsoft YaHei",sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    img { max-width: 100%; margin: 12px 0; border-radius: 4px; }\n    strong { font-weight: 600; }\n    .section-title { font-weight: 600; color: #0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 16px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <p>\n      2025 年 9 月 21 日，武汉大学人工智能学院谢倩倩教授应邀参加\n      <strong>CCKS 2025 全国知识图谱与语义计算大会（China Conference on Knowledge Graph and Semantic Computing）</strong>，\n      并在医疗知识图谱论坛作题为\n    </p>\n    <p class="section-title">《医疗领域知识增强大语言模型与应用》</p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-1.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-2.jpg" alt="">\n    <p>\n      <strong>全国知识图谱与语义计算大会</strong>由中国中文信息学会语言与知识计算专业委员会主办，\n      源自中文知识图谱研讨会（CKGS）和中国语义网与万维网科学大会（CSWS），\n      自 2016 年合并以来已成为国内知识图谱、语义计算及相关技术领域的核心学术会议。\n      大会汇聚知识表示与推理、自然语言理解与知识获取、图数据管理与图计算、智能问答等方向的学者与研发人员，\n      推动学术研究与产业应用的深入交流与合作。\n    </p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-3.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-4.jpg" alt="">\n    <p>\n      CCKS 2025 大会主题为\n      <strong>“大模型智能体与知识计算”</strong>，\n      聚焦知识图谱支持下的大模型智能体在知识计算方面的准确性与可靠性。\n    </p>\n    <p>\n      在专题报告中，谢倩倩教授聚焦医疗领域大语言模型的知识增强与应用问题，系统阐述了医疗领域 LLM 在文本理解、\n      临床推理与生成中的应用潜力，并分析了领域知识覆盖、诊断可靠性与结果可解释性等关键挑战。\n    </p>\n    <h2>报告核心内容</h2>\n    <p><strong>· 领域知识注入：</strong>整合结构化与非结构化医学知识，多源异构临床及科研数据，提高模型专业能力。</p>\n    <p><strong>· 专业能力提升：</strong>通过知识增强方法，提升 LLM 在医疗场景中的分析精度与决策可靠性。</p>\n    <p><strong>· 应用前景探讨：</strong>结合研究实践，分享医疗知识增强大语言模型的关键技术与未来发展方向。</p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-5.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-6.jpg" alt="">\n    <p>\n      此次活动展示了谢倩倩教授在自然语言处理与人工智能方向的最新科研成果，\n      进一步彰显了她在推动大语言模型在垂直专业领域落地及促进学术交流方面的核心影响力。\n    </p>\n  </div>\n</body>\n</html>',
+        '<!doctype html>\n<html lang="zh-CN">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>谢倩倩教授参加 CCKS 2025 并作专题报告</title>\n  <style>\n    body {\n      font-family: "Noto Sans SC","Microsoft YaHei",sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    img { max-width: 100%; margin: 12px 0; border-radius: 4px; }\n    strong { font-weight: 600; }\n    .section-title { font-weight: 600; color: #0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 16px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <p>\n      2025 年 9 月 21 日，武汉大学人工智能学院谢倩倩教授应邀参加\n      <strong>CCKS 2025 全国知识图谱与语义计算大会（China Conference on Knowledge Graph and Semantic Computing）</strong>，\n      并在医疗知识图谱论坛作题为\n    </p>\n    <p class="section-title">《医疗领域知识增强大语言模型与应用》</p>\n    <img src="./assets/img_e664fb157c01.jpg" alt="">\n    <img src="./assets/img_fde884daca5e.jpg" alt="">\n    <p>\n      <strong>全国知识图谱与语义计算大会</strong>由中国中文信息学会语言与知识计算专业委员会主办，\n      源自中文知识图谱研讨会（CKGS）和中国语义网与万维网科学大会（CSWS），\n      自 2016 年合并以来已成为国内知识图谱、语义计算及相关技术领域的核心学术会议。\n      大会汇聚知识表示与推理、自然语言理解与知识获取、图数据管理与图计算、智能问答等方向的学者与研发人员，\n      推动学术研究与产业应用的深入交流与合作。\n    </p>\n    <img src="./assets/img_119a50a710b4.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-4.jpg" alt="">\n    <p>\n      CCKS 2025 大会主题为\n      <strong>“大模型智能体与知识计算”</strong>，\n      聚焦知识图谱支持下的大模型智能体在知识计算方面的准确性与可靠性。\n    </p>\n    <p>\n      在专题报告中，谢倩倩教授聚焦医疗领域大语言模型的知识增强与应用问题，系统阐述了医疗领域 LLM 在文本理解、\n      临床推理与生成中的应用潜力，并分析了领域知识覆盖、诊断可靠性与结果可解释性等关键挑战。\n    </p>\n    <h2>报告核心内容</h2>\n    <p><strong>· 领域知识注入：</strong>整合结构化与非结构化医学知识，多源异构临床及科研数据，提高模型专业能力。</p>\n    <p><strong>· 专业能力提升：</strong>通过知识增强方法，提升 LLM 在医疗场景中的分析精度与决策可靠性。</p>\n    <p><strong>· 应用前景探讨：</strong>结合研究实践，分享医疗知识增强大语言模型的关键技术与未来发展方向。</p>\n    <img src="./assets/img_04d6f25db4f7.jpg" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/20250921-6.jpg" alt="">\n    <p>\n      此次活动展示了谢倩倩教授在自然语言处理与人工智能方向的最新科研成果，\n      进一步彰显了她在推动大语言模型在垂直专业领域落地及促进学术交流方面的核心影响力。\n    </p>\n  </div>\n</body>\n</html>',
       category: "News",
       createdAt: "2025-12-10T09:40:57.190Z",
       updatedAt: "2026-01-21T17:11:17.528Z",
@@ -1452,9 +1452,9 @@ export const STATIC_DATA = {
       summaryZh:
         "2025 年 9 月 10 日，值此教师节之际，课题组同学为老师们准备了鲜花和祝福，向辛勤指导与支持我们的老师们表达感谢与敬意，现场洋溢着温馨与欢快的氛围。",
       content:
-        '<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>Teacher\'s Day</title>\n  <style>\n    body {\n      font-family: "Noto Sans", Arial, sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    strong { font-weight: 600; }\n    .talk-title { font-weight: 600; color:#0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 12px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <h1>Teacher\'s Day</h1>\n    <p>\n      On September 10, 2025, on the occasion of Teacher\'s Day, the research group students prepared flowers and blessings for the teachers, expressing gratitude and respect to the teachers who have diligently guided and supported us. The scene was filled with a warm and joyful atmosphere.\n    </p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/news/20250910-1.png" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/news/20250910-2.png" alt="">\n  </div>\n</body>\n</html>',
+        '<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>Teacher\'s Day</title>\n  <style>\n    body {\n      font-family: "Noto Sans", Arial, sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    strong { font-weight: 600; }\n    .talk-title { font-weight: 600; color:#0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 12px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <h1>Teacher\'s Day</h1>\n    <p>\n      On September 10, 2025, on the occasion of Teacher\'s Day, the research group students prepared flowers and blessings for the teachers, expressing gratitude and respect to the teachers who have diligently guided and supported us. The scene was filled with a warm and joyful atmosphere.\n    </p>\n    <img src="./assets/img_577c39bdf31c.png" alt="">\n    <img src="./assets/img_b6aef9238ae1.png" alt="">\n  </div>\n</body>\n</html>',
       contentZh:
-        '<!doctype html>\n<html lang="zh-CN">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>教师节</title>\n  <style>\n    body {\n      font-family: "Noto Sans SC","Microsoft YaHei",sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    img { max-width: 100%; margin: 12px 0; border-radius: 4px; }\n    strong { font-weight: 600; }\n    .section-title { font-weight: 600; color: #0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 16px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <h1>教师节</h1>\n    <p>\n      2025 年 9 月 10 日，值此教师节之际，课题组同学为老师们准备了鲜花和祝福，向辛勤指导与支持我们的老师们表达感谢与敬意，现场洋溢着温馨与欢快的氛围。\n    </p>\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/news/20250910-1.png" alt="">\n    <img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/news/20250910-2.png" alt="">\n  </div>\n</body>\n</html>',
+        '<!doctype html>\n<html lang="zh-CN">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width,initial-scale=1" />\n  <title>教师节</title>\n  <style>\n    body {\n      font-family: "Noto Sans SC","Microsoft YaHei",sans-serif;\n      margin: 0; padding: 24px;\n      background: #ffffff; color:#111827;\n      line-height: 1.75;\n    }\n    .container { max-width: 900px; margin: 0 auto; }\n    h1 { font-size: 1.4rem; margin-bottom: 12px; }\n    h2 { font-size: 1.1rem; margin-top: 20px; }\n    p { margin: 0 0 14px; }\n    img { max-width: 100%; margin: 12px 0; border-radius: 4px; }\n    strong { font-weight: 600; }\n    .section-title { font-weight: 600; color: #0f62fe; }\n    img {\n      display: block;\n      max-width: 100%;\n      margin: 16px auto;\n      border-radius: 4px;\n    }\n  </style>\n</head>\n<body>\n  <div class="container">\n    <h1>教师节</h1>\n    <p>\n      2025 年 9 月 10 日，值此教师节之际，课题组同学为老师们准备了鲜花和祝福，向辛勤指导与支持我们的老师们表达感谢与敬意，现场洋溢着温馨与欢快的氛围。\n    </p>\n    <img src="./assets/img_577c39bdf31c.png" alt="">\n    <img src="./assets/img_b6aef9238ae1.png" alt="">\n  </div>\n</body>\n</html>',
       category: "News",
       createdAt: "2026-01-07T12:25:57.569Z",
       updatedAt: "2026-01-21T17:11:25.982Z",
@@ -2311,7 +2311,7 @@ export const STATIC_DATA = {
       createdAt: "2026-01-07T14:48:18.809Z",
       updatedAt: "2026-01-07T15:00:13.170Z",
       image:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/projects/pixiu-2.png",
+        "./assets/img_8b387e9a32f7.png",
     },
     {
       id: "1767797440071",
@@ -2366,7 +2366,7 @@ export const STATIC_DATA = {
       createdAt: "2026-01-07T14:54:33.971Z",
       updatedAt: "2026-01-07T15:00:50.119Z",
       image:
-        "https://my-web-clain.oss-cn-beijing.aliyuncs.com/projects/diting-1.png",
+        "./assets/img_4a82ff5d1008.png",
     },
     {
       id: "1767797803663",
@@ -2402,7 +2402,7 @@ export const STATIC_DATA = {
     mapEmbedUrl:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3390.990!2d114.359!3d30.540!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3617490000000001%3A0x0!2sWuhan+University!5e0!3m2!1sen!2sus!4v1700000000000",
     heroImages: [
-      " https://my-web-clain.oss-cn-beijing.aliyuncs.com/main-2.jpg",
+      " ./assets/img_2d9804b84e7e.jpg",
     ],
     createdAt: "2025-12-10T09:43:15.316Z",
     updatedAt: "2026-01-20T04:20:22.758Z",
@@ -2410,7 +2410,7 @@ export const STATIC_DATA = {
       {
         name: "The University of Manchester",
         nameZh: "曼彻斯特大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/logo-university-of-manchester.png",
+        logo: "./assets/img_4543d116101d.png",
         link: "https://www.manchester.ac.uk/",
         bgColor: "#D3D3D3",
         _id: "695e2b8889bd7d37142c34ec",
@@ -2418,7 +2418,7 @@ export const STATIC_DATA = {
       {
         name: "MBZUAI",
         nameZh: "穆罕默德·本·扎耶德人工智能大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/image-31.svg",
+        logo: "./assets/img_596b4e48dd8e.svg",
         link: "https://mbzuai.ac.ae/",
         bgColor: "#D3D3D3",
         _id: "696e64acc006643a2155a77d",
@@ -2426,7 +2426,7 @@ export const STATIC_DATA = {
       {
         name: "National Centre for Text Mining (NaCTeM), University of Manchester",
         nameZh: "曼彻斯特大学国家文本挖掘中心",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/nactemlogo.gif",
+        logo: "./assets/img_989620b0e54e.gif",
         link: "https://nactem.ac.uk/",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc9128229",
@@ -2434,7 +2434,7 @@ export const STATIC_DATA = {
       {
         name: "Université de Montréal",
         nameZh: "蒙特利尔大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E8%92%99%E7%89%B9%E5%88%A9%E5%B0%94%E5%A4%A7%E5%AD%A6.png",
+        logo: "./assets/img_b7719dbdb273.png",
         link: "https://www.umontreal.ca/en/",
         bgColor: "#D3D3D3",
         _id: "696e64acc006643a2155a77e",
@@ -2442,7 +2442,7 @@ export const STATIC_DATA = {
       {
         name: "Halmstad University",
         nameZh: "哈姆斯塔德大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E5%93%88%E5%A7%86%E6%96%AF%E5%A1%94%E5%BE%B7%E5%A4%A7%E5%AD%A6.svg",
+        logo: "./assets/img_9c7bfdc906fa.svg",
         link: "https://www.hh.se/english.html",
         bgColor: "#D3D3D3",
         _id: "696e64acc006643a2155a791",
@@ -2450,7 +2450,7 @@ export const STATIC_DATA = {
       {
         name: "Universiti Malaya",
         nameZh: "马来亚大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-UM.png",
+        logo: "./assets/img_932c1725b49e.png",
         link: "https://www.um.edu.my/",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a7",
@@ -2458,7 +2458,7 @@ export const STATIC_DATA = {
       {
         name: "Krirk University",
         nameZh: "泰国格乐大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-Krirk.png",
+        logo: "./assets/img_87af39b138ba.png",
         link: "https://www.krirk.ac.th/",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a8",
@@ -2466,7 +2466,7 @@ export const STATIC_DATA = {
       {
         name: "The University of Edinburgh",
         nameZh: "爱丁堡大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E7%88%B1%E4%B8%81%E5%A0%A1%E5%A4%A7%E5%AD%A6.png",
+        logo: "./assets/img_da2adfe288bb.png",
         link: "https://www.ed.ac.uk/",
         bgColor: "#D3D3D3",
         _id: "696e6b51c006643a2155a898",
@@ -2474,7 +2474,7 @@ export const STATIC_DATA = {
       {
         name: "Cardiff University",
         nameZh: "卡迪夫大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E5%8D%A1%E8%BF%AA%E5%A4%AB%E5%A4%A7%E5%AD%A6.png",
+        logo: "./assets/img_0e0897921286.png",
         link: "https://www.cardiff.ac.uk/",
         bgColor: "#D3D3D3",
         _id: "696e6b51c006643a2155a899",
@@ -2482,7 +2482,7 @@ export const STATIC_DATA = {
       {
         name: "The Chinese University of Hong Kong, Shenzhen",
         nameZh: "香港中文大学（深圳）",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E9%A6%99%E6%B8%AF%E4%B8%AD%E6%96%87%E5%A4%A7%E5%AD%A6%EF%BC%88%E6%B7%B1%E5%9C%B3%EF%BC%89-logo-2048px.png",
+        logo: "./assets/img_a3371e07ab4e.png",
         link: "https://www.cuhk.edu.cn/zh-hans",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc9128226",
@@ -2490,7 +2490,7 @@ export const STATIC_DATA = {
       {
         name: "School of Management and Engineering, Nanjing University",
         nameZh: "南京大学工程管理学院",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6-logo-2048px.png",
+        logo: "./assets/img_9a6dd007d535.png",
         link: "https://sme.nju.edu.cn/main.htm",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc9128224",
@@ -2498,7 +2498,7 @@ export const STATIC_DATA = {
       {
         name: "Shanghai Jiao Tong University",
         nameZh: "上海交通大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E4%B8%8A%E6%B5%B7%E4%BA%A4%E9%80%9A%E5%A4%A7%E5%AD%A6.png",
+        logo: "./assets/img_d0792da0202f.png",
         link: "https://www.sjtu.edu.cn/",
         bgColor: "#D3D3D3",
         _id: "696e6b51c006643a2155a89c",
@@ -2506,7 +2506,7 @@ export const STATIC_DATA = {
       {
         name: "Shanxi Agricultural University",
         nameZh: "山西农业大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-sxau-logo-2048px.png",
+        logo: "./assets/img_15c3850fb342.png",
         link: "https://www.sxau.edu.cn/index.htm",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc9128223",
@@ -2514,7 +2514,7 @@ export const STATIC_DATA = {
       {
         name: "Institute of Geochemistry, Chinese Academy of Sciences",
         nameZh: "中国科学院地球化学研究所",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-gyig.png",
+        logo: "./assets/img_b392cc82e384.png",
         link: "https://www.gyig.ac.cn/",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a3",
@@ -2522,7 +2522,7 @@ export const STATIC_DATA = {
       {
         name: "Hong Kong Metropolitan University",
         nameZh: "香港都会大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E9%A6%99%E6%B8%AF%E9%83%BD%E4%BC%9A%E5%A4%A7%E5%AD%A6.png",
+        logo: "./assets/img_51b9758d76c6.png",
         link: "https://www.hkmu.edu.hk/sc/",
         bgColor: "#D3D3D3",
         _id: "696e6b51c006643a2155a89f",
@@ -2530,7 +2530,7 @@ export const STATIC_DATA = {
       {
         name: "Sichuan University",
         nameZh: "四川大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E5%9B%9B%E5%B7%9D%E5%A4%A7%E5%AD%A6-logo-2048px.png",
+        logo: "./assets/img_069e00376756.png",
         link: "https://www.scu.edu.cn/index.htm",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc9128225",
@@ -2538,7 +2538,7 @@ export const STATIC_DATA = {
       {
         name: "Shandong University",
         nameZh: "山东大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-sdu.png",
+        logo: "./assets/img_9dba94dced32.png",
         link: "https://www.sdu.edu.cn/index.htm",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a9",
@@ -2546,7 +2546,7 @@ export const STATIC_DATA = {
       {
         name: "Hefei University of Technology",
         nameZh: "合肥工业大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E5%90%88%E8%82%A5%E5%B7%A5%E4%B8%9A%E5%A4%A7%E5%AD%A6-logo-2048px.png",
+        logo: "./assets/img_002cd3d2ef4a.png",
         link: "https://www.hfut.edu.cn/index.htm",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31aa",
@@ -2554,7 +2554,7 @@ export const STATIC_DATA = {
       {
         name: "Yunnan University",
         nameZh: "云南大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-ynu.png",
+        logo: "./assets/img_8c16f2618abe.png",
         link: "https://www.ynu.edu.cn/",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a6",
@@ -2562,7 +2562,7 @@ export const STATIC_DATA = {
       {
         name: "Harbin Institute of Technology, Shenzhen",
         nameZh: "哈尔滨工业大学（深圳）",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-hitsz.png",
+        logo: "./assets/img_ff1fb25e16d1.png",
         link: "https://www.hitsz.edu.cn/index.html",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a5",
@@ -2570,7 +2570,7 @@ export const STATIC_DATA = {
       {
         name: "School of Sociology, Wuhan University",
         nameZh: "武汉大学社会学院",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-whu-shxy.png",
+        logo: "./assets/img_0fca51970091.png",
         link: "https://shxx.whu.edu.cn/",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31ab",
@@ -2578,7 +2578,7 @@ export const STATIC_DATA = {
       {
         name: "Jinan University",
         nameZh: "暨南大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-jnu.png",
+        logo: "./assets/img_f5dad7afff91.png",
         link: "https://www.jnu.edu.cn/main.htm",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a2",
@@ -2586,7 +2586,7 @@ export const STATIC_DATA = {
       {
         name: "Nanjing Audit University",
         nameZh: "南京审计大学",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-nau.png",
+        logo: "./assets/img_0eb3e1ff6afe.png",
         link: "https://www.nau.edu.cn/main.htm",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc9128227",
@@ -2594,7 +2594,7 @@ export const STATIC_DATA = {
       {
         name: "Chinese People's Liberation Army (PLA) General Hospital",
         nameZh: "中国人民解放军总医院（301医院）",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/301%E5%8C%BB%E9%99%A2.png",
+        logo: "./assets/img_3ed507cec149.png",
         link: "https://www.301hospital.com.cn/index.php",
         bgColor: "#D3D3D3",
         _id: "696e6b51c006643a2155a8a8",
@@ -2602,7 +2602,7 @@ export const STATIC_DATA = {
       {
         name: "People's Government of Dongxihu District, Wuhan",
         nameZh: "武汉市东西湖区人民政府",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-dxh-gov.png",
+        logo: "./assets/img_4a9d54df12ec.png",
         link: "https://www.dxh.gov.cn/",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc912822a",
@@ -2610,7 +2610,7 @@ export const STATIC_DATA = {
       {
         name: "Tencent",
         nameZh: "腾讯",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-tencent.png",
+        logo: "./assets/img_fe2f614832e2.png",
         link: "https://www.tencent.com/",
         bgColor: "#D3D3D3",
         _id: "694b89664bb32d0bc9128228",
@@ -2618,7 +2618,7 @@ export const STATIC_DATA = {
       {
         name: "Curefun",
         nameZh: "治趣",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-curefun.png",
+        logo: "./assets/img_d27e0c37324d.png",
         link: "http://www.curefun.com/",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a4",
@@ -2626,7 +2626,7 @@ export const STATIC_DATA = {
       {
         name: "ZHONGSHAN HOSPITAL",
         nameZh: "复旦大学附属中山医院",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E5%A4%8D%E6%97%A6%E5%A4%A7%E5%AD%A6%E9%99%84%E5%B1%9E%E4%B8%AD%E5%B1%B1%E5%8C%BB%E9%99%A2.png",
+        logo: "./assets/img_e85d5947b0a8.png",
         link: "https://www.zs-hospital.sh.cn/",
         bgColor: "#D3D3D3",
         _id: "696e6b51c006643a2155a8ac",
@@ -2634,7 +2634,7 @@ export const STATIC_DATA = {
       {
         name: "HUAWEI Health",
         nameZh: "华为运动健康",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/%E5%8D%8E%E4%B8%BA%E8%BF%90%E5%8A%A8%E5%81%A5%E5%BA%B7.svg",
+        logo: "./assets/img_3fdc55280fe6.svg",
         link: "https://consumer.huawei.com/cn/mobileservices/health/",
         bgColor: "#D3D3D3",
         _id: "696f0286c006643a2155aaa9",
@@ -2642,16 +2642,16 @@ export const STATIC_DATA = {
       {
         name: "China Musical Instruments Association",
         nameZh: "中国乐器协会",
-        logo: "https://my-web-clain.oss-cn-beijing.aliyuncs.com/Collaborating%20Institutions/Collaborating%20Institutions-cmia.png",
+        logo: "./assets/img_9fd8fb5be2e8.png",
         link: "http://www.cmia.com.cn/index.html",
         bgColor: "#D3D3D3",
         _id: "695011e489bd7d37142c31a1",
       },
     ],
     researchAreasTextEn:
-      '<img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/about/logo.png" alt="Logo">',
+      '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
     researchAreasTextZh:
-      '<img src="https://my-web-clain.oss-cn-beijing.aliyuncs.com/about/logo.png" alt="Logo">',
+      '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
     welcomeTextEn:
       "We are a group of researchers working on artificial intelligence and natural language processing at the School of Artificial Intelligence, Wuhan University, committed to advancing interdisciplinary AI research and real-world applications.",
     welcomeTextZh:
