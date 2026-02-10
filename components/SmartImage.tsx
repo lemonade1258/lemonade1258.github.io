@@ -6,10 +6,10 @@ interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 /**
- * 增强型图片组件：
- * 1. 自动转换相对路径为 GitHub CDN 路径 (针对全球访问优化)
- * 2. 发生错误时自动回退到备用图片
- * 3. 严格遵循传入的 className，不添加任何额外样式包装，防止布局变形
+ * 智能图片组件：
+ * 1. 自动应用 jsDelivr CDN 加速
+ * 2. 错误自动回退
+ * 3. 渐进式加载效果
  */
 const SmartImage: React.FC<SmartImageProps> = ({
   src,
@@ -22,11 +22,16 @@ const SmartImage: React.FC<SmartImageProps> = ({
 }) => {
   const [currentSrc, setCurrentSrc] = useState<string>("");
   const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (src && typeof src === "string") {
-      setCurrentSrc(optimizeImageUrl(src));
+    if (src) {
+      // Fix: The 'src' prop from React.ImgHTMLAttributes might be inferred as string | Blob in some environments.
+      // Since optimizeImageUrl expects a string, we explicitly check the type before calling it.
+      const optimized = typeof src === "string" ? optimizeImageUrl(src) : "";
+      setCurrentSrc(optimized);
       setHasError(false);
+      setIsLoaded(false);
     }
   }, [src]);
 
@@ -38,14 +43,18 @@ const SmartImage: React.FC<SmartImageProps> = ({
     if (onError) onError(e);
   };
 
-  // 直接返回 img 标签，确保 CSS 选择器和布局逻辑完全不变
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    setIsLoaded(true);
+    if (onLoad) onLoad(e);
+  };
+
   return (
     <img
       {...props}
       src={currentSrc}
       alt={alt}
-      className={className}
-      onLoad={onLoad}
+      className={`${className} transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+      onLoad={handleLoad}
       onError={handleError}
     />
   );
