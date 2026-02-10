@@ -259,8 +259,7 @@ export const STATIC_DATA = {
       category: "Teachers",
       title: "Professor",
       titleZh: "教授",
-      avatar:
-        "./assets/img_023b08017061.jpg",
+      avatar: "./assets/img_023b08017061.jpg",
       email: "pengm@whu.edu.cn",
       homepage: "http://jszy.whu.edu.cn/pengmin/",
       bio: "Min Peng is a Professor at the School of Artificial Intelligence, Wuhan University, Director of the Center for Language and Information Research, and PhD Supervisor. She is a member of IEEE CIS ETTC, council member of China Chinese Information Society, committee member of Computational Linguistics Specialty Committee and Social Media Processing Specialty Committee of Chinese Information Society. She received her PhD in Computer Software and Theory from Wuhan University and conducted postdoctoral research at the Advanced Cyber-Infrastructure Laboratory, Department of Electrical and Computer Engineering, University of New Mexico, USA. Her long-term research focuses on artificial intelligence, natural language processing, information retrieval, topic models, knowledge graphs, cloud computing systems, and social computing.",
@@ -286,8 +285,7 @@ export const STATIC_DATA = {
       name: "Yanzhao Lai",
       nameZh: "赖彦钊",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_3c109d7c0bc2.jpg",
+      avatar: "./assets/img_3c109d7c0bc2.jpg",
       order: 2001,
       createdAt: "2026-01-07T14:14:35.011Z",
       updatedAt: "2026-01-20T13:05:44.043Z",
@@ -308,8 +306,7 @@ export const STATIC_DATA = {
       name: "Peng Lu",
       nameZh: "卢鹏",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_79dea526db99.jpg",
+      avatar: "./assets/img_79dea526db99.jpg",
       order: 2003,
       createdAt: "2026-01-07T14:15:33.090Z",
       updatedAt: "2026-01-20T13:04:49.785Z",
@@ -330,8 +327,7 @@ export const STATIC_DATA = {
       name: "Jiajia Huang",
       nameZh: "黄佳佳",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_afe7073807ab.jpg",
+      avatar: "./assets/img_afe7073807ab.jpg",
       order: 2004,
       createdAt: "2026-01-07T14:15:58.157Z",
       updatedAt: "2026-01-20T13:04:38.640Z",
@@ -352,8 +348,7 @@ export const STATIC_DATA = {
       name: "Zhiwei Hu",
       nameZh: "胡志伟",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_153af88ee6a1.jpg",
+      avatar: "./assets/img_153af88ee6a1.jpg",
       order: 2005,
       createdAt: "2026-01-07T14:18:21.644Z",
       updatedAt: "2026-01-20T13:05:57.134Z",
@@ -374,8 +369,7 @@ export const STATIC_DATA = {
       name: "Zhiwei Liu",
       nameZh: "刘志威",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_ebc6334e5ced.jpg",
+      avatar: "./assets/img_ebc6334e5ced.jpg",
       order: 2006,
       createdAt: "2026-01-08T07:05:01.079Z",
       updatedAt: "2026-01-20T13:06:07.334Z",
@@ -396,8 +390,7 @@ export const STATIC_DATA = {
       name: "Guojun Xiong",
       nameZh: "熊国钧",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_d18479b79edd.jpg",
+      avatar: "./assets/img_d18479b79edd.jpg",
       order: 2007,
       createdAt: "2026-01-08T07:06:01.505Z",
       updatedAt: "2026-01-20T13:06:27.451Z",
@@ -418,8 +411,7 @@ export const STATIC_DATA = {
       name: "Kailai Yang",
       nameZh: "杨开来",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_71e633b4db15.jpg",
+      avatar: "./assets/img_71e633b4db15.jpg",
       order: 2008,
       createdAt: "2026-01-08T07:06:44.278Z",
       updatedAt: "2026-01-20T13:06:38.909Z",
@@ -438,8 +430,7 @@ export const STATIC_DATA = {
       name: "Yuechen Jiang",
       nameZh: "姜玥辰",
       category: "Visiting Scholars",
-      avatar:
-        "./assets/img_e129a8f1b95d.jpg",
+      avatar: "./assets/img_e129a8f1b95d.jpg",
       order: 2009,
       createdAt: "2026-01-20T12:53:14.023Z",
       updatedAt: "2026-01-20T13:25:42.756Z",
@@ -457,12 +448,32 @@ export const STATIC_DATA = {
         influence: [],
         influenceZh: [],
       },
+      id: "1767795501546",
+      name: "Zhuohan Xie",
+      nameZh: "谢卓翰",
+      category: "Visiting Scholars",
+      avatar: "./assets/img_92f0cb06b77a.jpg",
+      order: 2010,
+      createdAt: "2026-01-07T14:18:21.644Z",
+      updatedAt: "2026-01-20T13:05:57.134Z",
+    },
+    {
+      teacherProfile: {
+        position: "",
+        researchAreas: [],
+        researchAreasZh: [],
+        achievements: [],
+        achievementsZh: [],
+        projects: [],
+        projectsZh: [],
+        influence: [],
+        influenceZh: [],
+      },
       id: "1767793283907",
       name: "Jie Gong",
       nameZh: "龚捷",
       category: "PhD",
-      avatar:
-        "./assets/img_c4371445db3d.jpg",
+      avatar: "./assets/img_c4371445db3d.jpg",
       order: 3001,
       createdAt: "2026-01-07T13:41:24.030Z",
       updatedAt: "2026-01-20T13:40:37.142Z",
@@ -486,8 +497,7 @@ export const STATIC_DATA = {
       name: "Yihuai Xu",
       nameZh: "许艺怀",
       category: "PhD",
-      avatar:
-        "./assets/img_5fc457d27104.jpg",
+      avatar: "./assets/img_5fc457d27104.jpg",
       order: 3002,
       createdAt: "2026-01-07T13:57:23.263Z",
       updatedAt: "2026-01-20T13:42:05.401Z",
@@ -512,8 +522,7 @@ export const STATIC_DATA = {
       name: "Xiyang Huang",
       nameZh: "黄希扬",
       category: "PhD",
-      avatar:
-        "./assets/img_fa0a0fc35cfa.jpg",
+      avatar: "./assets/img_fa0a0fc35cfa.jpg",
       order: 3003,
       createdAt: "2026-01-07T14:05:51.069Z",
       updatedAt: "2026-01-20T13:44:20.191Z",
@@ -538,8 +547,7 @@ export const STATIC_DATA = {
       name: "Wanying He",
       nameZh: "何菀滢",
       category: "PhD",
-      avatar:
-        "./assets/img_53bf496d6a13.jpg",
+      avatar: "./assets/img_53bf496d6a13.jpg",
       order: 3004,
       createdAt: "2026-01-07T14:06:25.856Z",
       updatedAt: "2026-01-16T20:02:22.163Z",
@@ -560,8 +568,7 @@ export const STATIC_DATA = {
       name: "Yanlin Song",
       nameZh: "宋衍霖",
       category: "PhD",
-      avatar:
-        "./assets/img_1951f02d1977.jpg",
+      avatar: "./assets/img_1951f02d1977.jpg",
       order: 3005,
       createdAt: "2026-01-07T14:12:50.352Z",
       updatedAt: "2026-01-16T21:33:10.722Z",
@@ -582,8 +589,7 @@ export const STATIC_DATA = {
       name: "Jun Luo",
       nameZh: "罗俊",
       category: "PhD",
-      avatar:
-        "./assets/img_fbdd4fed8348.jpg",
+      avatar: "./assets/img_fbdd4fed8348.jpg",
       order: 3006,
       createdAt: "2026-01-07T14:13:20.749Z",
       updatedAt: "2026-01-20T13:44:50.561Z",
@@ -608,8 +614,7 @@ export const STATIC_DATA = {
       name: "Mengxi Xiao",
       nameZh: "肖梦溪",
       category: "PhD",
-      avatar:
-        "./assets/img_11979942cd51.jpg",
+      avatar: "./assets/img_11979942cd51.jpg",
       order: 3007,
       createdAt: "2026-01-07T13:44:54.507Z",
       updatedAt: "2026-01-20T13:45:14.268Z",
@@ -633,8 +638,7 @@ export const STATIC_DATA = {
       name: "Zuchen Han",
       nameZh: "韩祖臣",
       category: "Master",
-      avatar:
-        "./assets/img_ff33ea5dfc99.png",
+      avatar: "./assets/img_ff33ea5dfc99.png",
       order: 4001,
       createdAt: "2026-01-07T13:47:53.230Z",
       updatedAt: "2026-01-20T13:43:53.515Z",
@@ -658,8 +662,7 @@ export const STATIC_DATA = {
       name: "Enze Zhang",
       nameZh: "张恩泽",
       category: "Master",
-      avatar:
-        "./assets/img_d9e5013f6cc2.jpg",
+      avatar: "./assets/img_d9e5013f6cc2.jpg",
       order: 4002,
       createdAt: "2026-01-07T13:48:37.755Z",
       updatedAt: "2026-01-20T13:42:54.308Z",
@@ -683,8 +686,7 @@ export const STATIC_DATA = {
       name: "Jifei Liu",
       nameZh: "刘骥飞",
       category: "Master",
-      avatar:
-        "./assets/img_76956e56e1b0.jpg",
+      avatar: "./assets/img_76956e56e1b0.jpg",
       order: 4003,
       createdAt: "2026-01-07T13:52:11.612Z",
       updatedAt: "2026-01-16T21:33:37.037Z",
@@ -705,8 +707,7 @@ export const STATIC_DATA = {
       name: "Yuhan Ke",
       nameZh: "柯宇瀚",
       category: "Master",
-      avatar:
-        "./assets/img_23306e7452c0.jpg",
+      avatar: "./assets/img_23306e7452c0.jpg",
       order: 4004,
       createdAt: "2026-01-07T13:56:38.783Z",
       updatedAt: "2026-01-16T21:34:46.677Z",
@@ -727,8 +728,7 @@ export const STATIC_DATA = {
       name: "Jun Yang",
       nameZh: "杨俊",
       category: "Master",
-      avatar:
-        "./assets/img_a036e690690b.jpg",
+      avatar: "./assets/img_a036e690690b.jpg",
       order: 4005,
       createdAt: "2026-01-07T13:58:47.889Z",
       updatedAt: "2026-01-20T13:43:23.926Z",
@@ -2310,8 +2310,7 @@ export const STATIC_DATA = {
       ],
       createdAt: "2026-01-07T14:48:18.809Z",
       updatedAt: "2026-01-07T15:00:13.170Z",
-      image:
-        "./assets/img_8b387e9a32f7.png",
+      image: "./assets/img_8b387e9a32f7.png",
     },
     {
       id: "1767797440071",
@@ -2365,8 +2364,7 @@ export const STATIC_DATA = {
       ],
       createdAt: "2026-01-07T14:54:33.971Z",
       updatedAt: "2026-01-07T15:00:50.119Z",
-      image:
-        "./assets/img_4a82ff5d1008.png",
+      image: "./assets/img_4a82ff5d1008.png",
     },
     {
       id: "1767797803663",
@@ -2401,9 +2399,7 @@ export const STATIC_DATA = {
     hiringLink: "https://sai.whu.edu.cn/",
     mapEmbedUrl:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3390.990!2d114.359!3d30.540!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3617490000000001%3A0x0!2sWuhan+University!5e0!3m2!1sen!2sus!4v1700000000000",
-    heroImages: [
-      " ./assets/img_2d9804b84e7e.jpg",
-    ],
+    heroImages: [" ./assets/img_2d9804b84e7e.jpg"],
     createdAt: "2025-12-10T09:43:15.316Z",
     updatedAt: "2026-01-20T04:20:22.758Z",
     partners: [
@@ -2648,10 +2644,8 @@ export const STATIC_DATA = {
         _id: "695011e489bd7d37142c31a1",
       },
     ],
-    researchAreasTextEn:
-      '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
-    researchAreasTextZh:
-      '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
+    researchAreasTextEn: '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
+    researchAreasTextZh: '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
     welcomeTextEn:
       "We are a group of researchers working on artificial intelligence and natural language processing at the School of Artificial Intelligence, Wuhan University, committed to advancing interdisciplinary AI research and real-world applications.",
     welcomeTextZh:
