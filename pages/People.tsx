@@ -12,6 +12,7 @@ import {
   Star,
   ArrowRight,
 } from "lucide-react";
+import SmartImage from "../components/SmartImage";
 
 const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
   const { t, language } = useLanguage();
@@ -54,7 +55,7 @@ const TeacherCard: React.FC<{ person: Person }> = ({ person }) => {
       <div className="flex flex-col md:flex-row items-start">
         <div className="w-full md:w-64 md:flex-shrink-0 bg-slate-50 relative group border-b md:border-b-0 md:border-r border-slate-100">
           <div className="aspect-[3/4] w-full">
-            <img
+            <SmartImage
               src={person.avatar}
               alt={name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -230,7 +231,7 @@ const CompactPersonCard: React.FC<{ person: Person }> = ({ person }) => {
     >
       <div className="flex items-start gap-4">
         <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100">
-          <img
+          <SmartImage
             src={person.avatar}
             alt={name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

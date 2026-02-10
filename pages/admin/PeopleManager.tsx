@@ -20,14 +20,12 @@ import {
   Link as LinkIcon,
   Hash,
   Mail,
-  User,
   Globe,
 } from "lucide-react";
-import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 
 /**
- * 旗舰版图片裁剪器 (绝对坐标物理对齐版)
+ * 旗舰版图片裁剪器
  */
 const ImageCropperModal: React.FC<{
   imageSrc: string;
@@ -70,118 +68,24 @@ const ImageCropperModal: React.FC<{
     updateVisuals();
   }, [updateVisuals]);
 
-  const handleWheel = (e: React.WheelEvent) => {
-    if (imgStatus !== "loaded") return;
-    e.preventDefault();
-    const factor = e.deltaY > 0 ? 0.95 : 1.05;
-    const nextZoom = Math.min(Math.max(zoomRef.current * factor, 0.001), 10);
-    zoomRef.current = nextZoom;
-    setZoom(nextZoom);
-    updateVisuals();
-  };
-
-  const isDragging = useRef(false);
-  const dragStart = useRef({ x: 0, y: 0 });
-
-  const onMouseDown = (e: React.MouseEvent) => {
-    if (imgStatus !== "loaded") return;
-    isDragging.current = true;
-    dragStart.current = {
-      x: e.clientX - offsetRef.current.x,
-      y: e.clientY - offsetRef.current.y,
-    };
-    if (containerRef.current) containerRef.current.style.cursor = "grabbing";
-  };
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      offsetRef.current = {
-        x: e.clientX - dragStart.current.x,
-        y: e.clientY - dragStart.current.y,
-      };
-      requestAnimationFrame(updateVisuals);
-    };
-    const onMouseUp = () => {
-      isDragging.current = false;
-      if (containerRef.current) containerRef.current.style.cursor = "move";
-    };
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [updateVisuals]);
-
-  const handleConfirm = () => {
-    const img = imageRef.current;
-    if (!img || imgStatus !== "loaded") return;
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    canvas.width = EXPORT_SIZE;
-    canvas.height = EXPORT_SIZE;
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE);
-
-    const drawWidth = img.naturalWidth * zoomRef.current * RATIO;
-    const drawHeight = img.naturalHeight * zoomRef.current * RATIO;
-    const canvasCenterX = EXPORT_SIZE / 2 + offsetRef.current.x * RATIO;
-    const canvasCenterY = EXPORT_SIZE / 2 + offsetRef.current.y * RATIO;
-
-    try {
-      ctx.drawImage(
-        img,
-        canvasCenterX - drawWidth / 2,
-        canvasCenterY - drawHeight / 2,
-        drawWidth,
-        drawHeight,
-      );
-      canvas.toBlob(
-        (blob) => {
-          if (blob) onConfirm(blob);
-        },
-        "image/jpeg",
-        0.95,
-      );
-    } catch (e) {
-      alert(
-        "CORS 限制：无法读取该图片像素。请确保图片允许跨域或尝试本地上传。",
-      );
-      onCancel();
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-3xl flex items-center justify-center p-4">
       <div className="w-full max-w-3xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
         <div className="p-8 border-b flex justify-between items-center bg-slate-50/50">
           <div>
             <h3 className="text-2xl font-bold text-slate-800">照片精准裁剪</h3>
-            <p className="text-sm text-slate-400 mt-1">
-              滚动缩放，拖拽调整位置
-            </p>
           </div>
           <button
             onClick={onCancel}
-            className="p-3 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
+            className="p-3 hover:bg-slate-200 rounded-full text-slate-400"
           >
             <X size={28} />
           </button>
         </div>
-
         <div
           ref={containerRef}
-          onWheel={handleWheel}
-          onMouseDown={onMouseDown}
-          className="bg-slate-900 relative h-[480px] overflow-hidden cursor-move touch-none flex items-center justify-center"
+          className="bg-slate-900 relative h-[480px] overflow-hidden cursor-move flex items-center justify-center"
         >
-          {imgStatus === "loading" && (
-            <Loader2 className="animate-spin text-brand-red" size={48} />
-          )}
           <img
             ref={imgDisplayRef}
             crossOrigin="anonymous"
@@ -190,29 +94,17 @@ const ImageCropperModal: React.FC<{
               setImgStatus("loaded");
               handleAutoFit();
             }}
-            onError={() => setImgStatus("error")}
             draggable={false}
-            className={`absolute select-none pointer-events-none max-none w-auto h-auto ${imgStatus === "loaded" ? "opacity-100" : "opacity-0"}`}
-            style={{
-              left: "50%",
-              top: "50%",
-              transform: `translate3d(-50%, -50%, 0) scale(1)`,
-            }}
-          />
-          <img
-            ref={imageRef}
-            src={imageSrc}
-            crossOrigin="anonymous"
-            className="hidden"
+            className={`absolute select-none pointer-events-none max-none w-auto h-auto transition-opacity ${imgStatus === "loaded" ? "opacity-100" : "opacity-0"}`}
+            style={{ left: "50%", top: "50%" }}
           />
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             <div
               style={{ width: `${UI_BOX_SIZE}px`, height: `${UI_BOX_SIZE}px` }}
-              className={`border-2 border-white/60 shadow-[0_0_0_2000px_rgba(15,23,42,0.85)] relative ${isCircle ? "rounded-full" : ""}`}
+              className={`border-2 border-white/60 shadow-[0_0_0_2000px_rgba(15,23,42,0.85)] ${isCircle ? "rounded-full" : ""}`}
             />
           </div>
         </div>
-
         <div className="p-10 bg-white flex justify-end gap-4">
           <button
             onClick={onCancel}
@@ -221,13 +113,38 @@ const ImageCropperModal: React.FC<{
             取消
           </button>
           <button
-            onClick={handleConfirm}
-            disabled={imgStatus !== "loaded"}
-            className="px-12 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 active:scale-95 transition-all"
+            onClick={() => {
+              const img = imageRef.current;
+              const canvas = document.createElement("canvas");
+              canvas.width = EXPORT_SIZE;
+              canvas.height = EXPORT_SIZE;
+              const ctx = canvas.getContext("2d");
+              if (ctx && img) {
+                ctx.drawImage(
+                  img,
+                  EXPORT_SIZE / 2 +
+                    offsetRef.current.x * RATIO -
+                    (img.naturalWidth * zoomRef.current * RATIO) / 2,
+                  EXPORT_SIZE / 2 +
+                    offsetRef.current.y * RATIO -
+                    (img.naturalHeight * zoomRef.current * RATIO) / 2,
+                  img.naturalWidth * zoomRef.current * RATIO,
+                  img.naturalHeight * zoomRef.current * RATIO,
+                );
+                canvas.toBlob((b) => b && onConfirm(b), "image/jpeg", 0.95);
+              }
+            }}
+            className="px-12 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl"
           >
-            确认使用
+            确认
           </button>
         </div>
+        <img
+          ref={imageRef}
+          src={imageSrc}
+          crossOrigin="anonymous"
+          className="hidden"
+        />
       </div>
     </div>
   );
@@ -244,22 +161,13 @@ const PeopleManager: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
-  const handleError = (err: any) => {
-    if (err.message === "AUTH_FORBIDDEN") {
-      alert("登录已过期，请重新登录。");
-      navigate("/admin/login");
-    } else {
-      alert(`操作失败: ${err.message}`);
-    }
-  };
-
   const refreshData = async () => {
     setIsLoading(true);
     try {
       const data = await fetchPeople();
       setPeople(data);
-    } catch (e: any) {
-      handleError(e);
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -268,74 +176,33 @@ const PeopleManager: React.FC = () => {
   useEffect(() => {
     refreshData();
   }, []);
-
   useEffect(() => {
-    if (activeCategory === "All") {
-      setFiltered(people);
-    } else {
-      setFiltered(people.filter((p) => p.category === activeCategory));
-    }
+    setFiltered(
+      activeCategory === "All"
+        ? people
+        : people.filter((p) => p.category === activeCategory),
+    );
   }, [people, activeCategory]);
 
   const handleSave = async () => {
-    if (isUploading) return alert("正在同步照片，请稍候...");
-    if (!editingItem.nameZh && !editingItem.name)
-      return alert("请输入成员姓名");
-
-    let newItem = { ...editingItem } as Person;
+    if (isUploading) return;
     setIsLoading(true);
     try {
       if (editingItem.id) {
-        await updatePerson(newItem);
+        await updatePerson(editingItem as Person);
       } else {
-        await createPerson(newItem);
+        await createPerson({
+          ...editingItem,
+          id: `person_${Date.now()}`,
+        } as Person);
       }
       setIsModalOpen(false);
       refreshData();
-    } catch (err: any) {
-      handleError(err);
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setCropSrc(reader.result as string);
-      };
-      reader.readAsDataURL(e.target.files[0]);
-    }
-    e.target.value = "";
-  };
-
-  const handleCropConfirm = async (blob: Blob) => {
-    setCropSrc(null);
-    setIsUploading(true);
-    try {
-      const file = new File([blob], `avatar_${Date.now()}.jpg`, {
-        type: "image/jpeg",
-      });
-      const url = await uploadFile(file);
-      setEditingItem((prev) => ({ ...prev, avatar: url }));
-    } catch (err: any) {
-      handleError(err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const openModal = (item?: Person) => {
-    setEditingItem(
-      item || {
-        category: "Teachers",
-        order: 1,
-        avatar:
-          "https://ui-avatars.com/api/?name=User&background=f1f5f9&color=cbd5e1",
-      },
-    );
-    setIsModalOpen(true);
   };
 
   const categories: PersonCategory[] = [
@@ -365,8 +232,14 @@ const PeopleManager: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800">团队成员管理</h2>
         <button
-          onClick={() => openModal()}
-          className="px-6 py-2 bg-brand-red text-white rounded-xl font-bold shadow-lg hover:bg-red-700 transition-all"
+          onClick={() => {
+            setEditingItem({
+              category: "Teachers",
+              avatar: "https://ui-avatars.com/api/?name=User",
+            });
+            setIsModalOpen(true);
+          }}
+          className="px-6 py-2 bg-brand-red text-white rounded-xl font-bold shadow-lg"
         >
           新增成员
         </button>
@@ -390,288 +263,236 @@ const PeopleManager: React.FC = () => {
         ))}
       </div>
 
-      <div className="flex-grow overflow-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filtered.map((person) => (
-            <div
-              key={person.id}
-              className="border border-slate-100 rounded-[2rem] p-6 flex gap-6 items-center relative group bg-white hover:shadow-xl transition-all"
-            >
-              <div
-                className={`w-16 h-16 overflow-hidden bg-slate-100 shrink-0 ${isCircleCategory(person.category) ? "rounded-full" : "rounded-2xl"}`}
-              >
-                <img
-                  src={person.avatar}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-slate-800 truncate">
-                  {person.nameZh || person.name}
-                </h3>
-                <p className="text-[10px] text-brand-red font-bold uppercase mb-1">
-                  {person.category}
-                </p>
-                <p className="text-[10px] text-slate-400 truncate">
-                  {person.titleZh || person.title || "职位未填"}
-                </p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => openModal(person)}
-                  className="p-2 text-slate-400 hover:text-blue-500"
-                >
-                  <Edit2 size={16} />
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm("确定删除?"))
-                      deletePerson(person.id)
-                        .then(refreshData)
-                        .catch(handleError);
-                  }}
-                  className="p-2 text-slate-400 hover:text-red-500"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+      <div className="flex-grow overflow-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filtered.map((person) => (
+          <div
+            key={person.id}
+            className="border rounded-[2rem] p-6 flex gap-6 items-center bg-white hover:shadow-xl transition-all"
+          >
+            <img
+              src={person.avatar}
+              className={`w-16 h-16 object-cover ${isCircleCategory(person.category) ? "rounded-full" : "rounded-2xl"}`}
+            />
+            <div className="flex-1 truncate">
+              <h3 className="font-bold text-slate-800 truncate">
+                {person.nameZh || person.name}
+              </h3>
+              <p className="text-[10px] text-brand-red font-bold uppercase">
+                {person.category}
+              </p>
+              <p className="text-[10px] text-slate-400 truncate">
+                {person.titleZh || person.title || "职位未填"}
+              </p>
             </div>
-          ))}
-        </div>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => {
+                  setEditingItem(person);
+                  setIsModalOpen(true);
+                }}
+                className="p-2 text-slate-400 hover:text-blue-500"
+              >
+                <Edit2 size={16} />
+              </button>
+              <button
+                onClick={() => deletePerson(person.id).then(refreshData)}
+                className="p-2 text-slate-400 hover:text-red-500"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-md p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl">
-            <div className="flex justify-between items-center p-8 border-b bg-slate-50/30">
+            <div className="flex justify-between items-center p-8 border-b">
               <h3 className="text-2xl font-bold">
-                {editingItem.id ? "修改成员档案" : "录入新成员"}
+                {editingItem.id ? "修改成员" : "新增成员"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-slate-200 rounded-full"
+                className="p-2 hover:bg-slate-200 rounded-full text-slate-400"
               >
                 <X size={28} />
               </button>
             </div>
 
-            <div className="p-10 space-y-10">
-              <div className="flex flex-col lg:flex-row gap-12 items-start">
-                {/* 左侧：头像管理 */}
-                <div className="flex flex-col items-center gap-6 shrink-0 w-full lg:w-72">
-                  <div
-                    className={`w-44 h-44 overflow-hidden border-4 border-white shadow-xl bg-slate-100 relative ${isCircleCategory(editingItem.category || "") ? "rounded-full" : "rounded-3xl"}`}
-                  >
-                    <img
-                      src={editingItem.avatar}
-                      className="w-full h-full object-cover"
-                    />
-                    {isUploading && (
-                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-sm z-10">
-                        <Loader2
-                          className="text-white animate-spin mb-2"
-                          size={32}
-                        />
-                        <span className="text-white text-[10px] font-bold">
-                          同步中...
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-4 w-full">
-                    <label className="cursor-pointer px-4 py-3 bg-brand-red text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-red-700 transition-colors">
-                      <Upload size={14} /> 本地图片裁剪
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                      />
-                    </label>
-
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                        <LinkIcon size={12} /> 头像链接 (Avatar URL)
-                      </label>
-                      <input
-                        placeholder="https://oss-link..."
-                        value={editingItem.avatar || ""}
-                        onChange={(e) =>
-                          setEditingItem({
-                            ...editingItem,
-                            avatar: e.target.value,
-                          })
+            <div className="p-10 flex flex-col lg:flex-row gap-12">
+              <div className="flex flex-col items-center gap-6 w-full lg:w-72">
+                <div
+                  className={`w-44 h-44 overflow-hidden border-4 border-white shadow-xl bg-slate-100 ${isCircleCategory(editingItem.category || "") ? "rounded-full" : "rounded-3xl"}`}
+                >
+                  <img
+                    src={editingItem.avatar}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="w-full space-y-4">
+                  <label className="cursor-pointer w-full py-3 bg-brand-red text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg">
+                    <Upload size={14} /> 本地上传裁剪
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          const r = new FileReader();
+                          r.onload = () => setCropSrc(r.result as string);
+                          r.readAsDataURL(e.target.files[0]);
                         }
-                        className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-50 rounded-2xl text-xs font-mono focus:border-brand-red focus:bg-white transition-all outline-none"
-                      />
-                    </div>
+                      }}
+                    />
+                  </label>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                      头像 URL (支持 OSS 链接)
+                    </label>
+                    <input
+                      value={editingItem.avatar || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          avatar: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-50 rounded-2xl text-xs font-mono focus:border-brand-red focus:bg-white outline-none"
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* 右侧：信息录入 */}
-                <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                  {/* 第一列：身份与姓名 */}
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                        成员类别
-                      </label>
-                      <select
-                        value={editingItem.category}
-                        onChange={(e) =>
-                          setEditingItem({
-                            ...editingItem,
-                            category: e.target.value as PersonCategory,
-                          })
-                        }
-                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
-                      >
-                        {categories.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                        中文姓名
-                      </label>
-                      <input
-                        placeholder="例如：张三"
-                        value={editingItem.nameZh || ""}
-                        onChange={(e) =>
-                          setEditingItem({
-                            ...editingItem,
-                            nameZh: e.target.value,
-                          })
-                        }
-                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                        English Name
-                      </label>
-                      <input
-                        placeholder="e.g. San Zhang"
-                        value={editingItem.name || ""}
-                        onChange={(e) =>
-                          setEditingItem({
-                            ...editingItem,
-                            name: e.target.value,
-                          })
-                        }
-                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
-                      />
-                    </div>
+              <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      成员类别
+                    </label>
+                    <select
+                      value={editingItem.category}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          category: e.target.value as any,
+                        })
+                      }
+                      className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm focus:border-brand-red outline-none transition-all"
+                    >
+                      {categories.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-
-                  {/* 第二列：职位与联系方式 */}
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                        中文职位
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      中文姓名
+                    </label>
+                    <input
+                      value={editingItem.nameZh || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          nameZh: e.target.value,
+                        })
+                      }
+                      className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm focus:border-brand-red outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      English Name
+                    </label>
+                    <input
+                      value={editingItem.name || ""}
+                      onChange={(e) =>
+                        setEditingItem({ ...editingItem, name: e.target.value })
+                      }
+                      className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm focus:border-brand-red outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      中文职位 (e.g. 博士研究生)
+                    </label>
+                    <input
+                      value={editingItem.titleZh || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          titleZh: e.target.value,
+                        })
+                      }
+                      className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm focus:border-brand-red outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      English Title (e.g. PhD Student)
+                    </label>
+                    <input
+                      value={editingItem.title || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          title: e.target.value,
+                        })
+                      }
+                      className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm focus:border-brand-red outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Email
                       </label>
                       <input
-                        placeholder="例如：博士后、2024级博士生"
-                        value={editingItem.titleZh || ""}
+                        value={editingItem.email || ""}
                         onChange={(e) =>
                           setEditingItem({
                             ...editingItem,
-                            titleZh: e.target.value,
+                            email: e.target.value,
                           })
                         }
-                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm focus:border-brand-red outline-none"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                        English Title / Position
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        个人主页 URL
                       </label>
                       <input
-                        placeholder="e.g. Postdoctoral Fellow"
-                        value={editingItem.title || ""}
+                        value={editingItem.homepage || ""}
                         onChange={(e) =>
                           setEditingItem({
                             ...editingItem,
-                            title: e.target.value,
+                            homepage: e.target.value,
                           })
                         }
-                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
+                        className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm focus:border-brand-red outline-none"
                       />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                            <Mail size={12} /> Email
-                          </label>
-                          <input
-                            placeholder="email@whu.edu.cn"
-                            value={editingItem.email || ""}
-                            onChange={(e) =>
-                              setEditingItem({
-                                ...editingItem,
-                                email: e.target.value,
-                              })
-                            }
-                            className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                            <Globe size={12} /> 个人主页 URL
-                          </label>
-                          <input
-                            placeholder="https://..."
-                            value={editingItem.homepage || ""}
-                            onChange={(e) =>
-                              setEditingItem({
-                                ...editingItem,
-                                homepage: e.target.value,
-                              })
-                            }
-                            className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                          <Hash size={12} /> 排序权重
-                        </label>
-                        <input
-                          type="number"
-                          value={editingItem.order}
-                          onChange={(e) =>
-                            setEditingItem({
-                              ...editingItem,
-                              order: parseInt(e.target.value),
-                            })
-                          }
-                          className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm outline-none focus:border-brand-red focus:bg-white transition-all"
-                        />
-                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="p-8 border-t flex justify-end gap-4 bg-slate-50/50">
+            <div className="p-8 border-t flex justify-end gap-4">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-8 py-3 text-slate-400 font-bold hover:bg-slate-200 rounded-xl transition-all"
+                className="px-8 py-3 text-slate-400 font-bold hover:bg-slate-100 rounded-xl"
               >
                 取消
               </button>
               <button
                 onClick={handleSave}
-                disabled={isUploading || isLoading}
-                className={`px-16 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl active:scale-95 transition-all ${isUploading || isLoading ? "opacity-50 grayscale cursor-wait" : "hover:bg-red-700"}`}
+                className="px-16 py-3 bg-brand-red text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 transition-all"
               >
-                {isUploading ? "正在同步图片..." : "确认保存成员"}
+                保存
               </button>
             </div>
           </div>
@@ -682,8 +503,12 @@ const PeopleManager: React.FC = () => {
         <ImageCropperModal
           imageSrc={cropSrc}
           isCircle={isCircleCategory(editingItem.category || "Teachers")}
-          onConfirm={handleCropConfirm}
           onCancel={() => setCropSrc(null)}
+          onConfirm={async (blob) => {
+            const url = await uploadFile(new File([blob], "avatar.jpg"));
+            setEditingItem({ ...editingItem, avatar: url });
+            setCropSrc(null);
+          }}
         />
       )}
     </div>

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { fetchContact, fetchNews } from "../lib/dataStore";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ContactInfo, NewsItem } from "../types";
+import SmartImage from "../components/SmartImage";
 
 const Tour: React.FC = () => {
   const { t, language } = useLanguage();
@@ -34,7 +35,7 @@ const Tour: React.FC = () => {
     if (contactInfo?.heroImages && contactInfo.heroImages.length > 1) {
       const interval = setInterval(() => {
         setCurrentImageIndex(
-          (prev) => (prev + 1) % contactInfo.heroImages!.length
+          (prev) => (prev + 1) % contactInfo.heroImages!.length,
         );
       }, 5000);
       return () => clearInterval(interval);
@@ -52,18 +53,18 @@ const Tour: React.FC = () => {
     contactInfo?.welcomeTitleEn,
     isZh
       ? "欢迎来到语言与信息研究中心 (CLAIN)! 👋"
-      : "Welcome to the Center for Language and Information Research (CLAIN)! 👋"
+      : "Welcome to the Center for Language and Information Research (CLAIN)! 👋",
   );
 
   const welcomeText = getText(
     contactInfo?.welcomeTextZh,
     contactInfo?.welcomeTextEn,
-    ""
+    "",
   );
   const researchText = getText(
     contactInfo?.researchAreasTextZh,
     contactInfo?.researchAreasTextEn,
-    ""
+    "",
   );
   const partners = contactInfo?.partners || [];
 
@@ -88,7 +89,7 @@ const Tour: React.FC = () => {
         <div className="relative w-full aspect-video md:aspect-[21/9] bg-slate-100 rounded-lg overflow-hidden shadow-sm border border-slate-100">
           {!loading && contactInfo?.heroImages?.length
             ? contactInfo.heroImages.map((img, idx) => (
-                <img
+                <SmartImage
                   key={idx}
                   src={img}
                   alt={`Slide ${idx + 1}`}
@@ -176,7 +177,7 @@ const Tour: React.FC = () => {
                     className="w-full h-28 rounded-xl border p-6 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1"
                     style={{ backgroundColor: partner.bgColor || "#F8FAFC" }}
                   >
-                    <img
+                    <SmartImage
                       src={partner.logo}
                       alt={partner.name}
                       className="max-h-full max-w-full object-contain filter drop-shadow-sm transition-transform duration-500 group-hover:scale-105"
