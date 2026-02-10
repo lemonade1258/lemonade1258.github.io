@@ -6,10 +6,10 @@ interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 /**
- * 智能图片组件：
- * 1. 自动应用 jsDelivr CDN 加速
- * 2. 错误自动回退
- * 3. 渐进式加载效果
+ * 智能图片组件 V3：
+ * 1. 优先尝试 CDN 加速
+ * 2. 如果 CDN 失败（可能是文件太大），自动切换到 Origin 直连
+ * 3. 如果 Origin 也失败，显示最终备选图
  */
 const SmartImage: React.FC<SmartImageProps> = ({
   src,
@@ -21,25 +21,30 @@ const SmartImage: React.FC<SmartImageProps> = ({
   ...props
 }) => {
   const [currentSrc, setCurrentSrc] = useState<string>("");
-  const [hasError, setHasError] = useState(false);
+  const [retryStage, setRetryStage] = useState<number>(0); // 0: CDN, 1: Origin, 2: Fallback
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (src) {
-      // Fix: The 'src' prop from React.ImgHTMLAttributes might be inferred as string | Blob in some environments.
-      // Since optimizeImageUrl expects a string, we explicitly check the type before calling it.
-      const optimized = typeof src === "string" ? optimizeImageUrl(src) : "";
-      setCurrentSrc(optimized);
-      setHasError(false);
+    if (src && typeof src === "string") {
+      setCurrentSrc(optimizeImageUrl(src, false));
+      setRetryStage(0);
       setIsLoaded(false);
     }
   }, [src]);
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    if (!hasError) {
-      setHasError(true);
+    if (retryStage === 0 && src && typeof src === "string") {
+      // 尝试阶段 1: 切换到 Origin
+      console.warn(`CDN Load failed for ${src}, retrying with Origin...`);
+      setRetryStage(1);
+      setCurrentSrc(optimizeImageUrl(src, true));
+    } else if (retryStage === 1) {
+      // 尝试阶段 2: 彻底失败，用备选图
+      console.error(`Origin Load also failed for ${src}, using fallback.`);
+      setRetryStage(2);
       setCurrentSrc(fallbackSrc);
     }
+
     if (onError) onError(e);
   };
 

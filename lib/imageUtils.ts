@@ -1,42 +1,47 @@
 /**
- * 全球化图片加载优化工具 (v2.1 - 深度本地化版)
+ * 全球化图片加载优化工具 (v2.4 - 容错增强版)
  */
 
 const GITHUB_USER = "lemonade1258";
 const GITHUB_REPO = "lemonade1258.github.io";
 
-// jsDelivr CDN 基础地址
 const CDN_BASE = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@main/`;
 
-export const optimizeImageUrl = (url: string): string => {
+const getOriginBase = () => {
+  if (typeof window === "undefined") return "";
+  const origin = window.location.origin;
+  // 处理 lemonade1258.github.io 可能存在的路径偏移
+  return origin.endsWith("/") ? origin : `${origin}/`;
+};
+
+export const optimizeImageUrl = (url: string, useOrigin = false): string => {
   if (!url) return "";
 
-  // 1. Base64 图片直接返回
-  if (url.startsWith("data:")) return url;
+  // 清洗 URL：剔除末尾可能存在的反斜杠或引号 (针对脚本可能产生的污染)
+  let cleanUrl = url.trim().replace(/[\\"'，]+$/, "");
 
-  // 2. 如果已经是本地资产路径 (./assets/...)
-  if (url.startsWith("./assets/") || url.startsWith("assets/")) {
-    const cleanPath = url.replace(/^\.\//, "");
-    // 开发环境下（localhost）直接访问，生产环境下走 CDN
+  // 1. Base64
+  if (cleanUrl.startsWith("data:")) return cleanUrl;
+
+  // 2. 处理本地资产
+  if (cleanUrl.startsWith("./assets/") || cleanUrl.startsWith("assets/")) {
+    const path = cleanUrl.replace(/^\.\//, "");
+
     if (
       typeof window !== "undefined" &&
       (window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1")
     ) {
-      return `/${cleanPath}`;
+      return `/${path}`;
     }
-    return `${CDN_BASE}${cleanPath}`;
+
+    if (useOrigin) {
+      return `${getOriginBase()}${path}`;
+    }
+    return `${CDN_BASE}${path}`;
   }
 
-  // 3. 处理 GitHub Raw 链接的回退（预防万一数据里还有残留）
-  if (url.includes("raw.githubusercontent.com")) {
-    const pathPart =
-      url.split(`/${GITHUB_REPO}/main/`)[1] || url.split("/master/")[1];
-    if (pathPart) return `${CDN_BASE}${pathPart}`;
-  }
-
-  // 4. 其他远程链接（如未被脚本处理的第三方链接），保持原样
-  return url;
+  return cleanUrl;
 };
 
 export const isGlobalMode = (): boolean => {
