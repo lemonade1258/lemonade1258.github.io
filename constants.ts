@@ -2644,8 +2644,8 @@ export const STATIC_DATA = {
         _id: "695011e489bd7d37142c31a1",
       },
     ],
-    researchAreasTextEn: '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
-    researchAreasTextZh: '<img src="./assets/img_92f0cb06b66a.png" alt="Logo">',
+    researchAreasTextEn: '<img src="./assets/logo.png" alt="Logo">',
+    researchAreasTextZh: '<img src="./assets/logo.png" alt="Logo">',
     welcomeTextEn:
       "We are a group of researchers working on artificial intelligence and natural language processing at the School of Artificial Intelligence, Wuhan University, committed to advancing interdisciplinary AI research and real-world applications.",
     welcomeTextZh:
